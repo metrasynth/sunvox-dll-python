@@ -21,7 +21,11 @@ import sys
 from textwrap import dedent
 
 
-DLL_BASE = os.environ.get('SUNVOX_DLL_BASE')
+DEFAULT_DLL_BASE = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), 'lib')
+)
+
+DLL_BASE = os.environ.get('SUNVOX_DLL_BASE', DEFAULT_DLL_BASE)
 DLL_PATH = os.environ.get('SUNVOX_DLL_PATH')
 
 
