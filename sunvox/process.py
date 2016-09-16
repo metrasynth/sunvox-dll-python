@@ -22,7 +22,7 @@ class Process(object):
         self._conn, child_conn = mp.Pipe()
         args = (child_conn,) + args
         self._process = self._ctx.Process(
-            target=Processor, args=args, kwargs=kwargs)
+            target=self.processor_class, args=args, kwargs=kwargs)
         self._process.start()
 
     _k, _v = None, None
