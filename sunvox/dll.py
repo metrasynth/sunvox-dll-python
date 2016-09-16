@@ -108,6 +108,7 @@ def decorated_fn(fn, argtypes, restype, needs_lock, doc):
     fn.argtypes = argtypes
     fn.restype = restype
     fn.needs_lock = needs_lock
+    fn.sunvox_dll_fn = True
     fn.__doc__ = dedent(doc).strip()
     return fn
 
@@ -512,3 +513,68 @@ get_ticks_per_second = decorated_fn(
     //Use sv_get_ticks_per_second() to get the number of SunVox ticks per second.
     unsigned int sv_get_ticks_per_second( void ) SUNVOX_FN_ATTR;
     """)
+
+
+__all__ = [
+    'DEFAULT_DLL_BASE',
+    'DLL_BASE',
+    'DLL_PATH',
+    'NOTECMD',
+    'SV_INIT_FLAG',
+    'SV_MODULE',
+    'SV_STYPE',
+    'sunvox_note',
+    'audio_callback',
+    'open_slot',
+    'close_slot',
+    'lock_slot',
+    'unlock_slot',
+    'init',
+    'deinit',
+    'get_sample_type',
+    'load',
+    'load_from_memory',
+    'play',
+    'play_from_beginning',
+    'stop',
+    'set_autostop',
+    'end_of_song',
+    'rewind',
+    'volume',
+    'send_event',
+    'get_current_line',
+    'get_current_line2',
+    'get_current_signal_level',
+    'get_song_name',
+    'get_song_bpm',
+    'get_song_tpl',
+    'get_song_length_frames',
+    'get_song_length_lines',
+    'new_module',
+    'remove_module',
+    'connect_module',
+    'disconnect_module',
+    'load_module',
+    'sampler_load',
+    'get_number_of_modules',
+    'get_module_flags',
+    'get_module_inputs',
+    'get_module_outputs',
+    'get_module_name',
+    'get_module_xy',
+    'get_module_color',
+    'get_module_scope',
+    'get_module_scope2',
+    'get_number_of_module_ctls',
+    'get_module_ctl_name',
+    'get_module_ctl_value',
+    'get_number_of_patterns',
+    'get_pattern_x',
+    'get_pattern_y',
+    'get_pattern_tracks',
+    'get_pattern_lines',
+    'get_pattern_data',
+    'pattern_mute',
+    'get_ticks',
+    'get_ticks_per_second',
+]
