@@ -31,6 +31,9 @@ class Process(object):
             locals()[_k] = passthrough(_k)
     del _k, _v
 
+    def kill(self):
+        self._conn.send(('kill', (), {}))
+
 
 __all__ = [
     'Process',

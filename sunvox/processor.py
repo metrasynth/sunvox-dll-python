@@ -12,10 +12,11 @@ class Processor(object):
 
     def __init__(self, conn):
         self.conn = conn
+        self.alive = True
         self._process_commands()
 
     def _process_commands(self):
-        while True:
+        while self.alive:
             name, args, kwargs = self.conn.recv()
             fn = getattr(self, name)
             self.conn.send(fn(*args, **kwargs))
@@ -25,3 +26,6 @@ class Processor(object):
         if hasattr(_v, 'sunvox_dll_fn'):
             locals()[_k] = passthrough(_k)
     del _k, _v
+
+    def kill(self):
+        self.alive = False
