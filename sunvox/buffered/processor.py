@@ -25,5 +25,6 @@ class BufferedProcessor(Processor):
 
     def fill_buffer(self):
         sunvox.audio_callback(
-            ctypes.byref(self._buffer), self._buffer_size, 0, 0)
+            ctypes.byref(self._buffer), self._buffer_size, 0,
+            sunvox.get_ticks())
         return self._buffer.raw
