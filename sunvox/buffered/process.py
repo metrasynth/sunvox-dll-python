@@ -1,7 +1,7 @@
 from multiprocessing import sharedctypes
 
 import numpy
-from numpy import ctypeslib, int16, float32
+from numpy import int16, float32, zeros
 
 from sunvox import SV_INIT_FLAG, Process
 from .processor import BufferedProcessor
@@ -32,10 +32,18 @@ class BufferedProcess(Process):
         self.init_buffer()
 
     def _send(self, name, *args, **kwargs):
-        return self._conn.send((name, args, kwargs))
+        self._lock.acquire()
+        try:
+            return self._conn.send((name, args, kwargs))
+        finally:
+            self._lock.release()
 
     def _recv(self):
-        return self._conn.recv()
+        self._lock.acquire()
+        try:
+            return self._conn.recv()
+        finally:
+                self._lock.release()
 
     @property
     def samples(self):
@@ -56,8 +64,12 @@ class BufferedProcess(Process):
     def fill_buffer(self):
         self._send('fill_buffer')
         raw = self._recv()
-        buffer = numpy.fromstring(raw, self.data_type)
-        buffer.shape = self.shape
+        if isinstance(raw, bytes):
+            buffer = numpy.fromstring(raw, self.data_type)
+            buffer.shape = self.shape
+        else:
+            buffer = zeros(self.shape)
+            print('WARNING, got {!r} {!r} instead of bytes'.format(type(raw), raw))
         return buffer
 
 
