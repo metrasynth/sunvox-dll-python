@@ -1,6 +1,8 @@
 from collections import defaultdict
 from contextlib import contextmanager
 from io import BytesIO
+import os
+import tempfile
 
 from . import dll
 
@@ -165,8 +167,25 @@ class Slot(object):
     def load_filename(self, filename):
         return self.process.load(self.number, filename)
 
-    def load_module(self, file_name, x, y, z):
-        return self.process.load_module(self.number, file_name, x, y, z)
+    def load_module(self, file_name, x=512, y=512, z=512):
+        value = None
+        if isinstance(file_name, BytesIO):
+            value = file_name.getvalue()
+        elif hasattr(file_name, 'mtype'):
+            import rv
+            value = rv.Synth(file_name).read()
+        elif hasattr(file_name, 'read'):
+            value = file_name.read()
+        if value is not None:
+            fd, file_name = tempfile.mkstemp('.sunsynth')
+            file_name = file_name.encode('utf8')
+            os.write(fd, value)
+            os.close(fd)
+        try:
+            return self.process.load_module(self.number, file_name, x, y, z)
+        finally:
+            if value is not None:
+                os.unlink(file_name)
 
     def lock(self):
         self.locks += 1
