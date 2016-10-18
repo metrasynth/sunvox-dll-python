@@ -170,7 +170,8 @@ class Slot(object):
 
     def lock(self):
         self.locks += 1
-        return self.process.lock_slot(self.number)
+        if self.locks == 1:
+            return self.process.lock_slot(self.number)
 
     def new_module(self, module_type, name, x, y, z):
         with self.locked():
@@ -216,7 +217,8 @@ class Slot(object):
     def unlock(self):
         if self.locks > 0:
             self.locks -= 1
-            return self.process.unlock_slot(self.number)
+            if self.locks == 0:
+                return self.process.unlock_slot(self.number)
 
 
 __all__ = [
