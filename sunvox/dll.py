@@ -13,7 +13,7 @@ Naming conventions:
     `sv_init` becomes `init`
 """
 
-from ctypes import POINTER, Structure, cdll, c_char_p, c_int, c_short, c_ubyte, c_ushort, c_uint, c_void_p, windll
+from ctypes import POINTER, Structure, c_char_p, c_int, c_short, c_ubyte, c_ushort, c_uint, c_void_p
 from ctypes.util import find_library
 from enum import IntEnum
 import os
@@ -28,8 +28,6 @@ DEFAULT_DLL_BASE = os.path.abspath(
 DLL_BASE = os.environ.get('SUNVOX_DLL_BASE', DEFAULT_DLL_BASE)
 DLL_PATH = os.environ.get('SUNVOX_DLL_PATH')
 
-
-loader = cdll
 if DLL_PATH is not None:
     _sunvox_lib_path = DLL_PATH
 elif DLL_BASE is not None:
@@ -46,7 +44,6 @@ elif DLL_BASE is not None:
         _lib_path = os.path.join(DEFAULT_DLL_BASE, 'windows', 'lib_x86')
         os.environ['PATH'] = _lib_path + ';' + os.environ['PATH']
         _sunvox_lib_path = rel_path
-        loader = windll
     else:
         if rel_path is not None:
             _sunvox_lib_path = os.path.join(DLL_BASE, rel_path)
@@ -54,6 +51,11 @@ elif DLL_BASE is not None:
             raise NotImplementedError('SunVox DLL could not be found for your platform.')
 else:
     _sunvox_lib_path = find_library('sunvox')
+
+if sys.platform == 'win32':
+    from ctypes import windll as loader
+else:
+    from ctypes import cdll as loader
 _s = loader.LoadLibrary(_sunvox_lib_path)
 
 
