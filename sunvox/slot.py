@@ -38,6 +38,9 @@ class Slot(object):
     def __exit__(self, type, value, traceback):
         self.close()
 
+    def __repr__(self):
+        return '<Slot number={} process={!r}>'.format(self.number, self.process)
+
     @classmethod
     def next_available_slot(cls, process):
         i = cls.allocation_map[process].index(False)
