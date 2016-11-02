@@ -166,9 +166,9 @@ unlock_slot = decorated_fn(
 
 
 init = decorated_fn(
-    _s.sv_init, [c_char_p, c_int, c_int, c_int], c_int, False,
+    _s.sv_init, [c_char_p, c_int, c_int, c_int], c_uint, False,
     """
-    int sv_init( const char* dev, int freq, int channels, int flags ) SUNVOX_FN_ATTR;
+    int sv_init( const char* dev, int freq, int channels, unsigned int flags ) SUNVOX_FN_ATTR;
     """)
 
 
@@ -257,6 +257,7 @@ volume = decorated_fn(
 send_event = decorated_fn(
     _s.sv_send_event, [c_int, c_int, c_int, c_int, c_int, c_int, c_int], c_int, False,
     """
+    //track_num - track number (0..15) within the special pattern
     //ctl - 0xCCEE. CC - number of a controller (1..255). EE - std effect
     //ctl_val - value of controller/effect
     int sv_send_event( int slot, int track_num, int note, int vel, int module, int ctl, int ctl_val ) SUNVOX_FN_ATTR;
@@ -375,9 +376,9 @@ get_number_of_modules = decorated_fn(
 
 
 get_module_flags = decorated_fn(
-    _s.sv_get_module_flags, [c_int, c_int], c_int, False,
+    _s.sv_get_module_flags, [c_int, c_int], c_uint, False,
     """
-    int sv_get_module_flags( int slot, int mod_num ) SUNVOX_FN_ATTR;
+    unsigned int sv_get_module_flags( int slot, int mod_num ) SUNVOX_FN_ATTR;
     """)
 
 
