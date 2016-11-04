@@ -8,7 +8,7 @@ dependencies = []
 
 setup(
     name='sunvox-dll-python',
-    version='0.1.1-1.9.2.beta2',
+    version='0.1.1-1.9.2',
     url='https://github.com/metrasynth/sunvox-dll-python',
     license='MIT',
     author='Matthew Scott',
