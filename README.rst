@@ -56,10 +56,14 @@ Requirements
 ------------
 
 - Python 3.5
+
 - One of these supported operating systems:
-  - macOS (64-bit)
-  - Linux (32-bit, 64-bit)
-  - Windows (32-bit)
+
+    - macOS (64-bit)
+
+    - Linux (32-bit, 64-bit)
+
+    - Windows (32-bit)
 
 
 About SunVox
