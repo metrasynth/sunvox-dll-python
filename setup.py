@@ -1,20 +1,37 @@
-"""
-Wrapper for the SunVox DLL.
-"""
+"""Wrapper for the SunVox DLL."""
 
+import io
+import os
+import re
 from setuptools import find_packages, setup
+import sys
+
+SETUP_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__)))
+sys.path.append(SETUP_DIR)
+import sunvox
 
 dependencies = []
 
+
+def read(*names, **kwargs):
+    return io.open(
+        os.path.join(os.path.dirname(__file__), *names),
+        encoding=kwargs.get('encoding', 'utf8')
+    ).read()
+
+
 setup(
     name='sunvox-dll-python',
-    version='0.1.1-1.9.2',
+    version=sunvox.__version__,
     url='https://github.com/metrasynth/sunvox-dll-python',
     license='MIT',
     author='Matthew Scott',
     author_email='matt@11craft.com',
-    description='Wrapper for the SunVox DLL',
-    long_description=__doc__,
+    description=__doc__,
+    long_description='%s\n%s' % (
+        re.compile('^.. start-badges.*^.. end-badges', re.M | re.S).sub('', read('README.rst')),
+        re.sub(':[a-z]+:`~?(.*?)`', r'``\1``', read('CHANGELOG.rst'))
+    ),
     packages=find_packages(exclude=['docs', 'tests']),
     package_data={
         'sunvox': [
