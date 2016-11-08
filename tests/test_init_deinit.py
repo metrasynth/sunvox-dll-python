@@ -1,4 +1,4 @@
-import sunvox
+import sunvox.api
 
 
 def test_init_deinit():
