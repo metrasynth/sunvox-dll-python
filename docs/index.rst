@@ -1,10 +1,14 @@
-Welcome to sunvox-dll-python's documentation!
-=============================================
+Contents
+========
 
-Contents:
+..  toctree::
+    :maxdepth: 2
 
-.. toctree::
-   :maxdepth: 2
+    readme
+    contributing
+    changelog
+    authors
+    license
 
 
 Indices and tables
@@ -13,4 +17,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
