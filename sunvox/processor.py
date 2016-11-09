@@ -1,9 +1,9 @@
-import sunvox
+import sunvox.dll
 
 
 def passthrough(name):
     def fn(self, *args, **kw):
-        return getattr(sunvox, name)(*args, **kw)
+        return getattr(sunvox.dll, name)(*args, **kw)
     fn.__name__ = name
     return fn
 
@@ -22,7 +22,8 @@ class Processor(object):
             self.conn.send(fn(*args, **kwargs))
 
     _k, _v = None, None
-    for _k, _v in sunvox.__dict__.items():
+    for _k in sunvox.dll.__all__:
+        _v = getattr(sunvox.dll, _k)
         if hasattr(_v, 'sunvox_dll_fn'):
             locals()[_k] = passthrough(_k)
     del _k, _v

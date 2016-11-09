@@ -1,6 +1,7 @@
 import ctypes
 
-import sunvox
+import sunvox.dll
+import sunvox.types
 from sunvox.processor import Processor
 
 
@@ -12,9 +13,9 @@ class BufferedProcessor(Processor):
     def init(self, device, freq, channels, flags):
         super().init(device, freq, channels, flags)
         self.channels = channels
-        if flags & sunvox.SV_INIT_FLAG.AUDIO_INT16:
+        if flags & sunvox.types.SV_INIT_FLAG.AUDIO_INT16:
             self.type_code = 'h'
-        elif flags & sunvox.SV_INIT_FLAG.AUDIO_FLOAT32:
+        elif flags & sunvox.types.SV_INIT_FLAG.AUDIO_FLOAT32:
             self.type_code = 'f'
         self.type_size = {'h': 2, 'f': 4}[self.type_code]
 
@@ -24,7 +25,7 @@ class BufferedProcessor(Processor):
         self._buffer = ctypes.create_string_buffer(self._buffer_bytes)
 
     def fill_buffer(self):
-        sunvox.audio_callback(
+        sunvox.dll.audio_callback(
             ctypes.byref(self._buffer), self._buffer_size, 0,
-            sunvox.get_ticks())
+            sunvox.dll.get_ticks())
         return self._buffer.raw

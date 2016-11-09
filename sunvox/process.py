@@ -1,7 +1,7 @@
 import multiprocessing as mp
 from threading import Lock
 
-import sunvox
+import sunvox.dll
 from .processor import Processor
 
 
@@ -32,7 +32,8 @@ class Process(object):
         self._process.start()
 
     _k, _v = None, None
-    for _k, _v in sunvox.__dict__.items():
+    for _k in sunvox.dll.__all__:
+        _v = getattr(sunvox.dll, _k)
         if hasattr(_v, 'sunvox_dll_fn'):
             locals()[_k] = passthrough(_k)
     del _k, _v

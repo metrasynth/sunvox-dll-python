@@ -1,6 +1,6 @@
 import numpy
 from numpy import float32, int16, zeros
-from sunvox import SV_INIT_FLAG, Process
+from sunvox.api import SV_INIT_FLAG, Process
 
 from .processor import BufferedProcessor
 
@@ -41,7 +41,7 @@ class BufferedProcess(Process):
         try:
             return self._conn.recv()
         finally:
-                self._lock.release()
+            self._lock.release()
 
     @property
     def samples(self):
