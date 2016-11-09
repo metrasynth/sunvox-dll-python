@@ -1,8 +1,8 @@
+import os
+import tempfile
 from collections import defaultdict
 from contextlib import contextmanager
 from io import BytesIO
-import os
-import tempfile
 
 from . import dll
 
@@ -39,7 +39,8 @@ class Slot(object):
         self.close()
 
     def __repr__(self):
-        return '<Slot number={} process={!r}>'.format(self.number, self.process)
+        return '<Slot number={} process={!r}>'.format(
+            self.number, self.process)
 
     @classmethod
     def next_available_slot(cls, process):
@@ -66,15 +67,17 @@ class Slot(object):
 
     def connect_module(self, source, destination):
         with self.locked():
-            return self.process.connect_module(self.number, source, destination)
+            return self.process.connect_module(
+                self.number, source, destination)
 
     def disconnect_module(self, source, destination):
         with self.locked():
-            return self.process.disconnect_module(self.number, source, destination)
+            return self.process.disconnect_module(
+                self.number, source, destination)
 
     def end_of_song(self):
         return self.process.end_of_song(self.number)
-    
+
     def get_current_line(self):
         return self.process.get_current_line(self.number)
 
@@ -89,13 +92,14 @@ class Slot(object):
 
     def get_module_ctl_name(self, mod_num, ctl_num):
         return self.process.get_module_ctl_name(self.number, mod_num, ctl_num)
-    
+
     def get_module_ctl_value(self, mod_num, ctl_num, scaled):
-        return self.process.get_module_ctl_value(self.number, mod_num, ctl_num, scaled)
+        return self.process.get_module_ctl_value(
+            self.number, mod_num, ctl_num, scaled)
 
     def get_module_flags(self, mod_num):
         return self.process.get_module_flags(self.number, mod_num)
-    
+
     def get_module_inputs(self, mod_num):
         return self.process.get_module_inputs(self.number, mod_num)
 
@@ -104,7 +108,7 @@ class Slot(object):
 
     def get_module_outputs(self, mod_num):
         return self.process.get_module_outputs(self.number, mod_num)
-    
+
     def get_module_scope(self, mod_num, channel, buffer_offset, buffer_size):
         return self.process.get_module_scope(
             self.number, mod_num, channel, buffer_offset, buffer_size)
@@ -118,10 +122,10 @@ class Slot(object):
 
     def get_number_of_modules(self):
         return self.process.get_number_of_modules(self.number)
-    
+
     def get_number_of_module_ctls(self, mod_num):
         return self.process.get_number_of_module_ctls(self.number, mod_num)
-    
+
     def get_number_of_patterns(self):
         return self.process.get_number_of_patterns(self.number)
 
@@ -133,19 +137,19 @@ class Slot(object):
 
     def get_pattern_tracks(self, pat_num):
         return self.process.get_pattern_tracks(self.number, pat_num)
-    
+
     def get_pattern_x(self, pat_num):
         return self.process.get_pattern_x(self.number, pat_num)
-    
+
     def get_pattern_y(self, pat_num):
         return self.process.get_pattern_y(self.number, pat_num)
-    
+
     def get_song_bpm(self):
         return self.process.get_song_bpm(self.number)
-    
+
     def get_song_length_frames(self):
         return self.process.get_song_length_frames(self.number)
-    
+
     def get_song_length_lines(self):
         return self.process.get_song_length_lines(self.number)
 
@@ -197,7 +201,8 @@ class Slot(object):
 
     def new_module(self, module_type, name, x, y, z):
         with self.locked():
-            return self.process.new_module(self.number, module_type, name, x, y, z)
+            return self.process.new_module(
+                self.number, module_type, name, x, y, z)
 
     def pattern_mute(self, pat_num, mute):
         with self.locked():

@@ -1,9 +1,7 @@
-from multiprocessing import sharedctypes
-
 import numpy
-from numpy import int16, float32, zeros
-
+from numpy import float32, int16, zeros
 from sunvox import SV_INIT_FLAG, Process
+
 from .processor import BufferedProcessor
 
 
@@ -69,7 +67,8 @@ class BufferedProcess(Process):
             buffer.shape = self.shape
         else:
             buffer = zeros(self.shape)
-            print('WARNING, got {!r} {!r} instead of bytes'.format(type(raw), raw))
+            print('WARNING, got {!r} {!r} instead of bytes'
+                  .format(type(raw), raw))
         return buffer
 
 

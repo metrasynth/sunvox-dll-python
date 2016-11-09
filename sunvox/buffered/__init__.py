@@ -1,1 +1,1 @@
-from .process import *
+from .process import *  # NOQA

@@ -26,7 +26,7 @@ Purpose
 -------
 
 Provides access to all of the SunVox DLL functions described
-in the :file:`sunvox.h` header file.
+in the ``sunvox.h`` header file.
 
 ..  uml::
 
