@@ -53,7 +53,7 @@ class BufferedProcess(Process):
 
     @property
     def type_code(self):
-        return {int16: 'h', float32: 'f'}[self.data_type]
+        return {int16: '<i2', float32: '<f4'}[self.data_type]
 
     def init_buffer(self):
         self._send('init_buffer', self.size)
@@ -63,7 +63,7 @@ class BufferedProcess(Process):
         self._send('fill_buffer')
         raw = self._recv()
         if isinstance(raw, bytes):
-            buffer = numpy.fromstring(raw, self.data_type)
+            buffer = numpy.fromstring(raw, self.type_code)
             buffer.shape = self.shape
         else:
             buffer = zeros(self.shape)
