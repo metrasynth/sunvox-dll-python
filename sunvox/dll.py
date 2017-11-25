@@ -39,10 +39,12 @@ elif DLL_BASE is not None:
         ('darwin', True): 'osx/lib_x86_64/sunvox.dylib',
         ('linux', True): 'linux/lib_x86_64/sunvox.so',
         ('linux', False): 'linux/lib_x86/sunvox.so',
+        ('win32', True): 'sunvox',
         ('win32', False): 'sunvox',
     }.get(key)
     if sys.platform == 'win32':
-        _lib_path = os.path.join(DEFAULT_DLL_BASE, 'windows', 'lib_x86')
+        _bit_path = 'lib_x86_64' if is64bit else 'lib_x86'
+        _lib_path = os.path.join(DEFAULT_DLL_BASE, 'windows', _bit_path)
         os.environ['PATH'] = _lib_path + ';' + os.environ['PATH']
         _sunvox_lib_path = rel_path
     else:

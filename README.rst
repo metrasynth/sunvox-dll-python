@@ -63,7 +63,7 @@ Requirements
 
     - Linux (32-bit, 64-bit)
 
-    - Windows (32-bit)
+    - Windows (32-bit, 64-bit)
 
 
 About SunVox
