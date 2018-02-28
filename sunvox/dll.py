@@ -33,12 +33,15 @@ if DLL_PATH is not None:
     _sunvox_lib_path = DLL_PATH
 elif DLL_BASE is not None:
     platform = sys.platform
+    if platform == 'linux' and os.uname()[-1] == 'armv7l':
+        platform = 'raspberrypi'
     is64bit = sys.maxsize > 2**32
     key = (platform, is64bit)
     rel_path = {
         ('darwin', True): 'osx/lib_x86_64/sunvox.dylib',
         ('linux', True): 'linux/lib_x86_64/sunvox.so',
         ('linux', False): 'linux/lib_x86/sunvox.so',
+        ('raspberrypi', False): 'linux/lib_arm_armhf_raspberry_pi/sunvox.so',
         ('win32', True): 'sunvox',
         ('win32', False): 'sunvox',
     }.get(key)
