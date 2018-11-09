@@ -5,6 +5,8 @@ Changelog
 0.3.0.1.9.4.0 (not released)
 ----------------------------
 
+- Update SunVox DLL to 1.9.4c (1.9.4.0).
+
 - Format code using black_.
 
 ..  _black:
