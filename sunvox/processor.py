@@ -4,12 +4,12 @@ import sunvox.dll
 def passthrough(name):
     def fn(self, *args, **kw):
         return getattr(sunvox.dll, name)(*args, **kw)
+
     fn.__name__ = name
     return fn
 
 
 class Processor(object):
-
     def __init__(self, conn):
         self.conn = conn
         self.alive = True
@@ -24,7 +24,7 @@ class Processor(object):
     _k, _v = None, None
     for _k in sunvox.dll.__all__:
         _v = getattr(sunvox.dll, _k)
-        if hasattr(_v, 'sunvox_dll_fn'):
+        if hasattr(_v, "sunvox_dll_fn"):
             locals()[_k] = passthrough(_k)
     del _k, _v
 

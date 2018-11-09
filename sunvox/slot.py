@@ -7,7 +7,7 @@ from io import BytesIO
 from . import dll
 
 
-FILENAME_ENCODING = 'utf8'
+FILENAME_ENCODING = "utf8"
 MAX_SLOTS = 4
 DEFAULT_ALLOCATION_MAP = [False] * MAX_SLOTS
 
@@ -39,8 +39,7 @@ class Slot(object):
         self.close()
 
     def __repr__(self):
-        return '<Slot number={} process={!r}>'.format(
-            self.number, self.process)
+        return "<Slot number={} process={!r}>".format(self.number, self.process)
 
     @classmethod
     def next_available_slot(cls, process):
@@ -67,13 +66,11 @@ class Slot(object):
 
     def connect_module(self, source, destination):
         with self.locked():
-            return self.process.connect_module(
-                self.number, source, destination)
+            return self.process.connect_module(self.number, source, destination)
 
     def disconnect_module(self, source, destination):
         with self.locked():
-            return self.process.disconnect_module(
-                self.number, source, destination)
+            return self.process.disconnect_module(self.number, source, destination)
 
     def end_of_song(self):
         return self.process.end_of_song(self.number)
@@ -94,8 +91,7 @@ class Slot(object):
         return self.process.get_module_ctl_name(self.number, mod_num, ctl_num)
 
     def get_module_ctl_value(self, mod_num, ctl_num, scaled):
-        return self.process.get_module_ctl_value(
-            self.number, mod_num, ctl_num, scaled)
+        return self.process.get_module_ctl_value(self.number, mod_num, ctl_num, scaled)
 
     def get_module_flags(self, mod_num):
         return self.process.get_module_flags(self.number, mod_num)
@@ -111,11 +107,13 @@ class Slot(object):
 
     def get_module_scope(self, mod_num, channel, buffer_offset, buffer_size):
         return self.process.get_module_scope(
-            self.number, mod_num, channel, buffer_offset, buffer_size)
+            self.number, mod_num, channel, buffer_offset, buffer_size
+        )
 
     def get_module_scope2(self, mod_num, channel, read_buf, samples_to_read):
         return self.process.get_module_scope2(
-            self.number, mod_num, channel, read_buf, samples_to_read)
+            self.number, mod_num, channel, read_buf, samples_to_read
+        )
 
     def get_module_xy(self, mod_num):
         return self.process.get_module_xy(self.number, mod_num)
@@ -161,7 +159,7 @@ class Slot(object):
             file_or_name = file_or_name.encode(FILENAME_ENCODING)
         if isinstance(file_or_name, bytes):
             return self.load_filename(file_or_name)
-        elif callable(getattr(file_or_name, 'read', None)):
+        elif callable(getattr(file_or_name, "read", None)):
             return self.load_file(file_or_name)
 
     def load_file(self, file):
@@ -178,14 +176,15 @@ class Slot(object):
         value = None
         if isinstance(file_name, BytesIO):
             value = file_name.getvalue()
-        elif hasattr(file_name, 'mtype'):
+        elif hasattr(file_name, "mtype"):
             import rv
+
             value = rv.Synth(file_name).read()
-        elif hasattr(file_name, 'read'):
+        elif hasattr(file_name, "read"):
             value = file_name.read()
         if value is not None:
-            fd, file_name = tempfile.mkstemp('.sunsynth')
-            file_name = file_name.encode('utf8')
+            fd, file_name = tempfile.mkstemp(".sunsynth")
+            file_name = file_name.encode("utf8")
             os.write(fd, value)
             os.close(fd)
         try:
@@ -201,8 +200,7 @@ class Slot(object):
 
     def new_module(self, module_type, name, x, y, z):
         with self.locked():
-            return self.process.new_module(
-                self.number, module_type, name, x, y, z)
+            return self.process.new_module(self.number, module_type, name, x, y, z)
 
     def pattern_mute(self, pat_num, mute):
         with self.locked():
@@ -223,14 +221,16 @@ class Slot(object):
 
     def sampler_load(self, sampler_module, file_name, sample_slot):
         return self.process.sampler_load(
-            self.number, sampler_module, file_name, sample_slot)
+            self.number, sampler_module, file_name, sample_slot
+        )
 
     def send_event(self, track_num, note, vel, module, ctl, ctl_val):
-        module_index = getattr(module, 'index', None)
+        module_index = getattr(module, "index", None)
         if module_index is not None:
             module = module_index + 1
         return self.process.send_event(
-            self.number, track_num, note, vel, module, ctl, ctl_val)
+            self.number, track_num, note, vel, module, ctl, ctl_val
+        )
 
     def set_autostop(self, autostop):
         return self.process.set_autostop(self.number, autostop)
@@ -248,9 +248,4 @@ class Slot(object):
                 return self.process.unlock_slot(self.number)
 
 
-__all__ = [
-    'FILENAME_ENCODING',
-    'MAX_SLOTS',
-    'NoSlotsAvailable',
-    'Slot',
-]
+__all__ = ["FILENAME_ENCODING", "MAX_SLOTS", "NoSlotsAvailable", "Slot"]

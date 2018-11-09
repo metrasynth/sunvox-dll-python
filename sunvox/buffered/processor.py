@@ -6,7 +6,6 @@ from sunvox.processor import Processor
 
 
 class BufferedProcessor(Processor):
-
     def __init__(self, conn):
         super().__init__(conn)
 
@@ -14,10 +13,10 @@ class BufferedProcessor(Processor):
         super().init(device, freq, channels, flags)
         self.channels = channels
         if flags & sunvox.types.SV_INIT_FLAG.AUDIO_INT16:
-            self.type_code = 'h'
+            self.type_code = "h"
         elif flags & sunvox.types.SV_INIT_FLAG.AUDIO_FLOAT32:
-            self.type_code = 'f'
-        self.type_size = {'h': 2, 'f': 4}[self.type_code]
+            self.type_code = "f"
+        self.type_size = {"h": 2, "f": 4}[self.type_code]
 
     def init_buffer(self, size):
         self._buffer_size = size
@@ -26,6 +25,6 @@ class BufferedProcessor(Processor):
 
     def fill_buffer(self):
         sunvox.dll.audio_callback(
-            ctypes.byref(self._buffer), self._buffer_size, 0,
-            sunvox.dll.get_ticks())
+            ctypes.byref(self._buffer), self._buffer_size, 0, sunvox.dll.get_ticks()
+        )
         return self._buffer.raw

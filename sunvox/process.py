@@ -13,6 +13,7 @@ def passthrough(name):
             return self._conn.recv()
         finally:
             self._lock.release()
+
     fn.__name__ = name
     return fn
 
@@ -23,25 +24,24 @@ class Process(object):
     processor_class = Processor
 
     def __init__(self, *args, **kwargs):
-        self._ctx = mp.get_context('spawn')
+        self._ctx = mp.get_context("spawn")
         self._conn, child_conn = mp.Pipe()
         self._lock = Lock()
         args = (child_conn,) + args
         self._process = self._ctx.Process(
-            target=self.processor_class, args=args, kwargs=kwargs)
+            target=self.processor_class, args=args, kwargs=kwargs
+        )
         self._process.start()
 
     _k, _v = None, None
     for _k in sunvox.dll.__all__:
         _v = getattr(sunvox.dll, _k)
-        if hasattr(_v, 'sunvox_dll_fn'):
+        if hasattr(_v, "sunvox_dll_fn"):
             locals()[_k] = passthrough(_k)
     del _k, _v
 
     def kill(self):
-        self._conn.send(('kill', (), {}))
+        self._conn.send(("kill", (), {}))
 
 
-__all__ = [
-    'Process',
-]
+__all__ = ["Process"]

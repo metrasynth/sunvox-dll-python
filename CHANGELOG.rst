@@ -2,6 +2,15 @@ Changelog
 =========
 
 
+0.3.0.1.9.4.0 (not released)
+----------------------------
+
+- Format code using black_.
+
+..  _black:
+    https://black.readthedocs.io/en/stable/
+
+
 0.2.1.1.9.3.2 (2018-02-28)
 --------------------------
 

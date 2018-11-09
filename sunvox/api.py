@@ -9,8 +9,8 @@ from sunvox.slot import *  # NOQA
 from sunvox.types import *  # NOQA
 
 __all__ = (
-    sunvox.dll.__all__ +
-    sunvox.slot.__all__ +
-    sunvox.process.__all__ +
-    sunvox.types.__all__
+    sunvox.dll.__all__
+    + sunvox.slot.__all__
+    + sunvox.process.__all__
+    + sunvox.types.__all__
 )
