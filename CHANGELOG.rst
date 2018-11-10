@@ -7,6 +7,23 @@ Changelog
 
 - Update SunVox DLL to 1.9.4c (1.9.4.0).
 
+- Update docstrings to match new information in upstream ``sunvox.h``.
+
+- Add ``sunvox.dll.audio_callback2`` function.
+
+- Add ``sunvox.dll.update_input`` function.
+
+- Add ``sunvox.dll.load_module_from_memory`` function.
+
+- Add ``sunvox.dll.sampler_load_from_memory`` function.
+
+- Add ``sunvox.dll.get_log`` function.
+
+- Update ``sunvox.slot.Slot.load_module`` method to always use
+  ``load_module_from_memory`` function internally.
+
+- Add ``sunvox.slot.Slot.sampler_load_from_memory`` method.
+
 - Format code using black_.
 
 ..  _black:

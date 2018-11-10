@@ -1,5 +1,3 @@
-import os
-import tempfile
 from collections import defaultdict
 from contextlib import contextmanager
 from io import BytesIO
@@ -177,21 +175,15 @@ class Slot(object):
         if isinstance(file_name, BytesIO):
             value = file_name.getvalue()
         elif hasattr(file_name, "mtype"):
-            import rv
+            import rv.api
 
-            value = rv.Synth(file_name).read()
+            value = rv.api.Synth(file_name).read()
         elif hasattr(file_name, "read"):
             value = file_name.read()
         if value is not None:
-            fd, file_name = tempfile.mkstemp(".sunsynth")
-            file_name = file_name.encode("utf8")
-            os.write(fd, value)
-            os.close(fd)
-        try:
-            return self.process.load_module(self.number, file_name, x, y, z)
-        finally:
-            if value is not None:
-                os.unlink(file_name)
+            return self.process.load_module_from_memory(
+                self.number, value, len(value), x, y, z
+            )
 
     def lock(self):
         self.locks += 1
@@ -222,6 +214,11 @@ class Slot(object):
     def sampler_load(self, sampler_module, file_name, sample_slot):
         return self.process.sampler_load(
             self.number, sampler_module, file_name, sample_slot
+        )
+
+    def sampler_load_from_memory(self, sampler_module, data, sample_slot):
+        return self.process.sampler_load_from_memory(
+            self.number, sampler_module, data, len(data), sample_slot
         )
 
     def send_event(self, track_num, note, vel, module, ctl, ctl_val):

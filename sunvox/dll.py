@@ -80,22 +80,55 @@ audio_callback = decorated_fn(
     c_int,
     False,
     """
-    int sv_audio_callback( void* buf, int frames, int latency,
-                           unsigned int out_time );
-    Get the next piece of SunVox audio.
-    With sv_audio_callback() you can ignore the built-in SunVox sound output
-      mechanism and use some other sound system.
-    Set SV_INIT_FLAG_USER_AUDIO_CALLBACK flag in sv_init()
-      if you want to use sv_audio_callback() function.
+    int sv_audio_callback( void* buf, int frames, int latency, unsigned int out_time );
+
+    Get the next piece of SunVox audio from the Output module.
+
+    With sv_audio_callback() you can ignore the built-in SunVox sound output mechanism and use some other sound system.
+
+    SV_INIT_FLAG_USER_AUDIO_CALLBACK flag in sv_init() mus be set.
+
     Parameters:
-      buf - destination buffer of type signed short
-            (if SV_INIT_FLAG_AUDIO_INT16 used in sv_init())
+      buf - destination buffer of type signed short (if SV_INIT_FLAG_AUDIO_INT16 used in sv_init())
             or float (if SV_INIT_FLAG_AUDIO_FLOAT32 used in sv_init());
-          stereo data will be interleaved in this buffer: LRLR... ;
-          where the LR is the one frame (Left+Right channels);
+            stereo data will be interleaved in this buffer: LRLR... ; where the LR is the one frame (Left+Right channels);
       frames - number of frames in destination buffer;
       latency - audio latency (in frames);
-      out_time - output time (in ticks).
+      out_time - buffer output time (in system ticks);
+
+    Return values: 
+      0 - silence (buffer filled with zeroes); 
+      1 - some signal.
+
+    Example:
+      user_out_time = ... ; //output time in user time space (NOT SunVox time space!)
+      user_cur_time = ... ; //current time (user time space)
+      user_ticks_per_second = ... ; //ticks per second (user time space)
+      user_latency = user_out_time - use_cur_time; //latency in user time space
+      unsigned int sunvox_latency = ( user_latency * sv_get_ticks_per_second() ) / user_ticks_per_second; //latency in SunVox time space
+      unsigned int latency_frames = ( user_latency * sample_rate_Hz ) / user_ticks_per_second; //latency in frames
+      sv_audio_callback( buf, frames, latency_frames, sv_get_ticks() + sunvox_latency );
+    """,
+)
+
+
+audio_callback2 = decorated_fn(
+    _s.sv_audio_callback2,
+    [c_void_p, c_int, c_int, c_uint, c_int, c_int, c_void_p],
+    c_int,
+    False,
+    """
+    int sv_audio_callback2( void* buf, int frames, int latency, unsigned int out_time, int in_type, int in_channels, void* in_buf );
+
+    Send some data to the Input module and receive the filtered data from the Output module.
+
+    It's the same as sv_audio_callback() but you also can specify the input buffer.
+
+    Parameters:
+      ...
+      in_type - input buffer type: 0 - signed short (16bit integer); 1 - float (32bit floating point);
+      in_channels - number of input channels;
+      in_buf - input buffer; stereo data will be interleaved in this buffer: LRLR... ; where the LR is the one frame (Left+Right channels);
     """,
 )
 
@@ -107,12 +140,26 @@ open_slot = decorated_fn(
     False,
     """
     int sv_open_slot( int slot );
+
+    Open sound slot for SunVox.
+    
+    You can use several slots simultaneously (each slot with its own SunVox engine)
     """,
 )
 
 
 close_slot = decorated_fn(
-    _s.sv_close_slot, [c_int], c_int, False, """int sv_close_slot( int slot );"""
+    _s.sv_close_slot,
+    [c_int],
+    c_int,
+    False,
+    """
+    int sv_close_slot( int slot );
+    
+    Close sound slot for SunVox.
+    
+    You can use several slots simultaneously (each slot with its own SunVox engine)
+    """,
 )
 
 
@@ -123,6 +170,10 @@ lock_slot = decorated_fn(
     False,
     """
     int sv_lock_slot( int slot );
+
+    Lock sound slot for SunVox.
+    
+    You can use several slots simultaneously (each slot with its own SunVox engine)
     """,
 )
 
@@ -134,6 +185,10 @@ unlock_slot = decorated_fn(
     False,
     """
     int sv_unlock_slot( int slot );
+
+    Unlock sound slot for SunVox.
+    
+    You can use several slots simultaneously (each slot with its own SunVox engine)
     """,
 )
 
@@ -144,7 +199,17 @@ init = decorated_fn(
     c_uint,
     False,
     """
-    int sv_init( const char* dev, int freq, int channels, unsigned int flags );
+    int sv_init( const char* config, int freq, int channels, unsigned int flags );
+
+    Global sound system init.
+
+    Parameters:
+      config - string with additional configuration in the following format: "option_name=value|option_name=value";
+               example: "buffer=1024|audiodriver=alsa|audiodevice=hw:0,0";
+               use null if you agree to the automatic configuration;
+      freq - sample rate (Hz); min - 44100;
+      channels - only 2 supported now;
+      flags - mix of the SV_INIT_FLAG_xxx flags.
     """,
 )
 
@@ -156,6 +221,24 @@ deinit = decorated_fn(
     False,
     """
     int sv_deinit( void );
+
+    Global sound system deinit.
+    """,
+)
+
+
+update_input = decorated_fn(
+    _s.sv_update_input,
+    [],
+    c_int,
+    False,
+    """
+    int sv_update_input( void );
+
+    handle input ON/OFF requests to enable/disable input ports of the sound card
+    (for example, after the Input module creation).
+ 
+    Call it from the main thread only, where the SunVox sound stream is not locked.
     """,
 )
 
@@ -181,6 +264,8 @@ load = decorated_fn(
     False,
     """
     int sv_load( int slot, const char* name );
+    
+    Load SunVox project from the file.
     """,
 )
 
@@ -192,6 +277,8 @@ load_from_memory = decorated_fn(
     False,
     """
     int sv_load_from_memory( int slot, void* data, unsigned int data_size );
+    
+    Load SunVox project from the memory block.
     """,
 )
 
@@ -235,9 +322,13 @@ set_autostop = decorated_fn(
     c_int,
     False,
     """
-    //autostop values: 0 - disable autostop; 1 - enable autostop.
-    //When disabled, song is playing infinitely in the loop.
     int sv_set_autostop( int slot, int autostop );
+
+    Autostop values: 
+      0 - disable autostop; 
+      1 - enable autostop.
+      
+    When disabled, song is playing infinitely in the loop.
     """,
 )
 
@@ -248,8 +339,11 @@ end_of_song = decorated_fn(
     c_int,
     False,
     """
-    //sv_end_of_song() return values: 0 - song is playing now; 1 - stopped.
     int sv_end_of_song( int slot );
+    
+    return values: 
+      0 - song is playing now; 
+      1 - stopped.
     """,
 )
 
@@ -272,6 +366,8 @@ volume = decorated_fn(
     False,
     """
     int sv_volume( int slot, int vol );
+    
+    Set volume from 0 (min) to 256 (max 100%).
     """,
 )
 
@@ -282,11 +378,19 @@ send_event = decorated_fn(
     c_int,
     False,
     """
-    //track_num - track number (0..15) within the special pattern
-    //ctl - 0xCCEE. CC - number of a controller (1..255). EE - std effect
-    //ctl_val - value of controller/effect
     int sv_send_event( int slot, int track_num, int note, int vel,
                        int module, int ctl, int ctl_val );
+                       
+    Send some event (note ON, note OFF, controller change, etc.)
+ 
+    Parameters:
+      slot;
+      track_num - track number within the pattern;
+      note: 0 - nothing; 1..127 - note num; 128 - note off; 129, 130... - see NOTECMD_xxx defines;
+      vel: velocity 1..129; 0 - default;
+      module: 0 - nothing; 1..255 - module number + 1;
+      ctl: 0xCCEE. CC - number of a controller (1..255). EE - effect;
+      ctl_val: value of controller or effect.
     """,
 )
 
@@ -297,7 +401,9 @@ get_current_line = decorated_fn(
     c_int,
     False,
     """
-    int sv_get_current_line( int slot ); //Get current line number
+    int sv_get_current_line( int slot );
+    
+    Get current line number
     """,
 )
 
@@ -309,7 +415,8 @@ get_current_line2 = decorated_fn(
     False,
     """
     int sv_get_current_line2( int slot );
-        //Get current line number in fixed point format 27.5
+    
+    Get current line number in fixed point format 27.5
     """,
 )
 
@@ -320,7 +427,9 @@ get_current_signal_level = decorated_fn(
     c_int,
     False,
     """
-    int sv_get_current_signal_level( int slot, int channel ); //From 0 to 255
+    int sv_get_current_signal_level( int slot, int channel ); 
+    
+    From 0 to 255
     """,
 )
 
@@ -364,9 +473,11 @@ get_song_length_frames = decorated_fn(
     c_uint,
     False,
     """
-    //Frame is one discrete of the sound. Sampling frequency 44100 Hz means,
-    //  that you hear 44100 frames per second.
     unsigned int sv_get_song_length_frames( int slot );
+
+    Get the project length in frames.
+
+    Frame is one discrete of the sound. Sample rate 44100 Hz means, that you hear 44100 frames per second. 
     """,
 )
 
@@ -378,6 +489,8 @@ get_song_length_lines = decorated_fn(
     False,
     """
     unsigned int sv_get_song_length_lines( int slot );
+
+    Get the project length in lines.
     """,
 )
 
@@ -388,10 +501,11 @@ new_module = decorated_fn(
     c_int,
     True,
     """
-    //sv_new_module() - create a new module;
-    int sv_new_module( int slot, const char* type, const char* name,
-                       int x, int y, int z );
-    //USE LOCK/UNLOCK!
+    int sv_new_module( int slot, const char* type, const char* name, int x, int y, int z );
+
+    Create a new module.
+    
+    USE LOCK/UNLOCK!
     """,
 )
 
@@ -402,9 +516,11 @@ remove_module = decorated_fn(
     c_int,
     True,
     """
-    //sv_remove_module() - remove selected module;
     int sv_remove_module( int slot, int mod_num );
-    //USE LOCK/UNLOCK!
+
+    Remove selected module.
+    
+    USE LOCK/UNLOCK!
     """,
 )
 
@@ -415,9 +531,11 @@ connect_module = decorated_fn(
     c_int,
     True,
     """
-    //sv_connect_module() - connect the source to the destination;
     int sv_connect_module( int slot, int source, int destination );
-    //USE LOCK/UNLOCK!
+
+    Connect the source to the destination.
+    
+    USE LOCK/UNLOCK!
     """,
 )
 
@@ -428,11 +546,14 @@ disconnect_module = decorated_fn(
     c_int,
     True,
     """
-    //sv_disconnect_module() - disconnect the source from the destination;
     int sv_disconnect_module( int slot, int source, int destination );
-    //USE LOCK/UNLOCK!
+
+    Disconnect the source from the destination.
+
+    USE LOCK/UNLOCK!
     """,
 )
+
 
 load_module = decorated_fn(
     _s.sv_load_module,
@@ -440,9 +561,30 @@ load_module = decorated_fn(
     c_int,
     False,
     """
-    //sv_load_module() - load a module; supported file formats:
-    //  sunsynth, xi, wav, aiff;
     int sv_load_module( int slot, const char* file_name, int x, int y, int z );
+
+    Load a module or sample.
+     
+    Supported file formats: sunsynth, xi, wav, aiff.
+    
+    Return value: new module number or negative value in case of some error.
+    """,
+)
+
+
+load_module_from_memory = decorated_fn(
+    _s.sv_load_module_from_memory,
+    [c_int, c_void_p, c_uint, c_int, c_int, c_int],
+    c_int,
+    False,
+    """
+    int sv_load_module_from_memory( int slot, void* data, unsigned int data_size, int x, int y, int z );
+
+    Load a module or sample from the memory block.
+
+    Supported file formats: sunsynth, xi, wav, aiff.
+
+    Return value: new module number or negative value in case of some error.
     """,
 )
 
@@ -453,10 +595,26 @@ sampler_load = decorated_fn(
     c_int,
     False,
     """
-    //sv_sampler_load() - load a sample to already created Sampler;
-    //  to replace the whole sampler - set sample_slot to -1;
-    int sv_sampler_load( int slot, int sampler_module, const char* file_name,
-                         int sample_slot );
+    int sv_sampler_load( int slot, int sampler_module, const char* file_name, int sample_slot );
+
+    Load a sample to already created Sampler.
+    
+    To replace the whole sampler - set sample_slot to -1.
+    """,
+)
+
+
+sampler_load_from_memory = decorated_fn(
+    _s.sv_sampler_load_from_memory,
+    [c_int, c_int, c_void_p, c_uint, c_int],
+    c_int,
+    False,
+    """
+    int sv_sampler_load_from_memory( int slot, int sampler_module, void* data, unsigned int data_size, int sample_slot ) SUNVOX_FN_ATTR;
+
+    Load a sample to already created Sampler.
+
+    To replace the whole sampler - set sample_slot to -1.
     """,
 )
 
@@ -708,11 +866,30 @@ get_ticks_per_second = decorated_fn(
 )
 
 
+get_log = decorated_fn(
+    _s.sv_get_log,
+    [c_int],
+    c_char_p,
+    False,
+    """
+    const char* sv_get_log( int size );
+    
+    Get the latest messages from the log.
+    
+    Parameters:
+      size - max number of bytes to read.
+    
+    Return value: pointer to the null-terminated string with the latest log messages.
+    """,
+)
+
+
 __all__ = [
     "DEFAULT_DLL_BASE",
     "DLL_BASE",
     "DLL_PATH",
     "audio_callback",
+    "audio_callback2",
     "open_slot",
     "close_slot",
     "lock_slot",
@@ -743,7 +920,9 @@ __all__ = [
     "connect_module",
     "disconnect_module",
     "load_module",
+    "load_module_from_memory",
     "sampler_load",
+    "sampler_load_from_memory",
     "get_number_of_modules",
     "get_module_flags",
     "get_module_inputs",
@@ -765,4 +944,5 @@ __all__ = [
     "pattern_mute",
     "get_ticks",
     "get_ticks_per_second",
+    "get_log",
 ]
