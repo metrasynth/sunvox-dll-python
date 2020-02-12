@@ -237,20 +237,7 @@ update_input = decorated_fn(
 
     handle input ON/OFF requests to enable/disable input ports of the sound card
     (for example, after the Input module creation).
-    """,
-)
 
-
-get_sample_type = decorated_fn(
-    _s.sv_get_sample_type,
-    [],
-    c_int,
-    False,
-    """
-    //sv_get_sample_type() - get internal sample type of the SunVox engine.
-    //  Return value: one of the SV_STYPE_xxx defines.
-    //Use it to get the scope buffer type from get_module_scope() function.
-    int sv_get_sample_type( void );
     Call it from the main thread only, where the SunVox sound stream is not locked.
     """,
 )
@@ -695,18 +682,6 @@ get_module_color = decorated_fn(
 )
 
 
-get_module_scope = decorated_fn(
-    _s.sv_get_module_scope,
-    [c_int, c_int, c_int, POINTER(c_int), POINTER(c_int)],
-    c_void_p,
-    False,
-    """
-    void* sv_get_module_scope( int slot, int mod_num, int channel,
-                               int* buffer_offset, int* buffer_size );
-    """,
-)
-
-
 get_module_scope2 = decorated_fn(
     _s.sv_get_module_scope2,
     [c_int, c_int, c_int, POINTER(c_short), c_uint],
@@ -895,7 +870,6 @@ __all__ = [
     "unlock_slot",
     "init",
     "deinit",
-    "get_sample_type",
     "load",
     "load_from_memory",
     "play",
@@ -929,7 +903,6 @@ __all__ = [
     "get_module_name",
     "get_module_xy",
     "get_module_color",
-    "get_module_scope",
     "get_module_scope2",
     "get_number_of_module_ctls",
     "get_module_ctl_name",

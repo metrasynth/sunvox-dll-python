@@ -103,11 +103,6 @@ class Slot(object):
     def get_module_outputs(self, mod_num):
         return self.process.get_module_outputs(self.number, mod_num)
 
-    def get_module_scope(self, mod_num, channel, buffer_offset, buffer_size):
-        return self.process.get_module_scope(
-            self.number, mod_num, channel, buffer_offset, buffer_size
-        )
-
     def get_module_scope2(self, mod_num, channel, read_buf, samples_to_read):
         return self.process.get_module_scope2(
             self.number, mod_num, channel, read_buf, samples_to_read
