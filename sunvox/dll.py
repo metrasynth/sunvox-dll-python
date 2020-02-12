@@ -353,7 +353,9 @@ volume = decorated_fn(
     """
     int sv_volume( int slot, int vol );
 
-    Set volume from 0 (min) to 256 (max 100%).
+    sv_volume() - set volume from 0 (min) to 256 (max 100%);
+    negative values are ignored;
+    return value: previous volume;
     """,
 )
 
@@ -809,6 +811,10 @@ pattern_mute = decorated_fn(
     True,
     """
     int sv_pattern_mute( int slot, int pat_num, int mute ); //USE LOCK/UNLOCK!
+
+    sv_pattern_mute() - mute (1) / unmute (0) specified pattern;
+    negative values are ignored;
+    return value: previous state (1 - muted; 0 - unmuted) or -1 (error);
     """,
 )
 
