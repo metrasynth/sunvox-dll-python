@@ -75,10 +75,10 @@ else:
 _s = loader.LoadLibrary(_sunvox_lib_path)
 
 
-SunVoxFunction = Callable[[...], Any]
+GenericFunction = Callable[..., Any]
 
 
-def decorated_fn(fn, argtypes, restype, needs_lock, doc) -> SunVoxFunction:
+def decorated_fn(fn, argtypes, restype, needs_lock, doc) -> GenericFunction:
     fn.argtypes = argtypes
     fn.restype = restype
     fn.needs_lock = needs_lock
@@ -95,7 +95,7 @@ def sunvox_fn(c_fn, needs_lock=False):
     :return: The decorated function.
     """
 
-    def decorator(fn: Callable[[...], Any]) -> Callable[[...], Any]:
+    def decorator(fn: GenericFunction) -> GenericFunction:
         spec = inspect.getfullargspec(fn)
         annotations = spec.annotations
         c_fn.argtypes = [annotations[arg] for arg in spec.args]
