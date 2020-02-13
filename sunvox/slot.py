@@ -1,5 +1,6 @@
 from collections import defaultdict
 from contextlib import contextmanager
+from ctypes import c_int, POINTER, c_uint32, c_char_p, c_float
 from io import BytesIO
 
 from . import dll
@@ -85,11 +86,17 @@ class Slot(object):
     def get_module_color(self, mod_num):
         return self.process.get_module_color(self.number, mod_num)
 
+    def get_module_finetune(self, mod_num: c_int) -> c_uint32:
+        return self.process.get_module_finetune(self.number, mod_num)
+
     def get_module_ctl_name(self, mod_num, ctl_num):
         return self.process.get_module_ctl_name(self.number, mod_num, ctl_num)
 
     def get_module_ctl_value(self, mod_num, ctl_num, scaled):
         return self.process.get_module_ctl_value(self.number, mod_num, ctl_num, scaled)
+
+    def find_module(self, name: c_char_p) -> c_int:
+        return self.process.find_module(self.number, name)
 
     def get_module_flags(self, mod_num):
         return self.process.get_module_flags(self.number, mod_num)
@@ -107,6 +114,16 @@ class Slot(object):
         return self.process.get_module_scope2(
             self.number, mod_num, channel, read_buf, samples_to_read
         )
+
+    def module_curve(
+        self,
+        mod_num: c_int,
+        curve_num: c_int,
+        data: POINTER(c_float),
+        len: c_int,
+        w: c_int,
+    ) -> c_int:
+        return self.module_curve(self.number, mod_num, curve_num, data, len, w)
 
     def get_module_xy(self, mod_num):
         return self.process.get_module_xy(self.number, mod_num)
@@ -126,8 +143,14 @@ class Slot(object):
     def get_pattern_lines(self, pat_num):
         return self.process.get_pattern_lines(self.number, pat_num)
 
+    def get_pattern_name(self, pat_num: c_int) -> c_char_p:
+        return self.process.get_pattern_name(self.number, pat_num)
+
     def get_pattern_tracks(self, pat_num):
         return self.process.get_pattern_tracks(self.number, pat_num)
+
+    def find_pattern(self, name: c_char_p) -> c_int:
+        return self.process.find_pattern(self.number, name)
 
     def get_pattern_x(self, pat_num):
         return self.process.get_pattern_x(self.number, pat_num)
@@ -185,6 +208,11 @@ class Slot(object):
         if self.locks == 1:
             return self.process.lock_slot(self.number)
 
+    def get_time_map(
+        self, start_line: c_int, len: c_int, dest: POINTER(c_uint32), flags: c_int
+    ):
+        return self.process.get_time_map(self.number, start_line, len, dest, flags)
+
     def new_module(self, module_type, name, x, y, z):
         with self.locked():
             return self.process.new_module(self.number, module_type, name, x, y, z)
@@ -216,6 +244,9 @@ class Slot(object):
             self.number, sampler_module, data, len(data), sample_slot
         )
 
+    def set_event_t(self, set: c_int, t: c_int) -> c_int:
+        return self.process.set_event_t(self.number, set, t)
+
     def send_event(self, track_num, note, vel, module, ctl, ctl_val):
         module_index = getattr(module, "index", None)
         if module_index is not None:
@@ -226,6 +257,9 @@ class Slot(object):
 
     def set_autostop(self, autostop):
         return self.process.set_autostop(self.number, autostop)
+
+    def get_autostop(self) -> c_int:
+        return self.process.get_autostop(self.number)
 
     def stop(self):
         return self.process.stop(self.number)

@@ -12,12 +12,22 @@ Naming conventions:
 -   Function names do not contain a `sv_` prefix:
     `sv_init` becomes `init`
 """
-
+import inspect
 import os
 import sys
-from ctypes import POINTER, c_char_p, c_int, c_short, c_uint, c_void_p
+from ctypes import (
+    POINTER,
+    c_char_p,
+    c_int,
+    c_short,
+    c_uint,
+    c_void_p,
+    c_uint32,
+    c_float,
+)
 from ctypes.util import find_library
 from textwrap import dedent
+from typing import Callable, Any
 
 from sunvox.types import sunvox_note
 
@@ -65,13 +75,37 @@ else:
 _s = loader.LoadLibrary(_sunvox_lib_path)
 
 
-def decorated_fn(fn, argtypes, restype, needs_lock, doc):
+SunVoxFunction = Callable[[...], Any]
+
+
+def decorated_fn(fn, argtypes, restype, needs_lock, doc) -> SunVoxFunction:
     fn.argtypes = argtypes
     fn.restype = restype
     fn.needs_lock = needs_lock
     fn.sunvox_dll_fn = True
     fn.__doc__ = dedent(doc).strip()
     return fn
+
+
+def sunvox_fn(c_fn, needs_lock=False):
+    """
+    Decorate a ctypes function based on a function declaration's type annotations.
+
+    :param c_fn: The function in the loaded SunVox library (`_s` global)
+    :return: The decorated function.
+    """
+
+    def decorator(fn: Callable[[...], Any]) -> Callable[[...], Any]:
+        spec = inspect.getfullargspec(fn)
+        annotations = spec.annotations
+        c_fn.argtypes = [annotations[arg] for arg in spec.args]
+        c_fn.restype = annotations["return"]
+        c_fn.needs_lock = needs_lock
+        c_fn.sunvox_dll_fn = True
+        c_fn.__doc__ = dedent(fn.__doc__).strip()
+        return c_fn
+
+    return decorator
 
 
 audio_callback = decorated_fn(
@@ -227,6 +261,13 @@ deinit = decorated_fn(
 )
 
 
+@sunvox_fn(_s.sv_update_input)
+def get_sample_rate() -> c_int:
+    """
+    Get current sampling rate (it may differ from the frequency specified in sv_init())
+    """
+
+
 update_input = decorated_fn(
     _s.sv_update_input,
     [],
@@ -319,6 +360,15 @@ set_autostop = decorated_fn(
 )
 
 
+@sunvox_fn(_s.sv_get_autostop)
+def get_autostop(slot: c_int) -> c_int:
+    """
+    sv_set_autostop(), sv_get_autostop() -
+    autostop values: 0 - disable autostop; 1 - enable autostop.
+    When disabled, song is playing infinitely in the loop.
+    """
+
+
 end_of_song = decorated_fn(
     _s.sv_end_of_song,
     [c_int],
@@ -358,6 +408,20 @@ volume = decorated_fn(
     return value: previous volume;
     """,
 )
+
+
+@sunvox_fn(_s.sv_set_event_t)
+def set_event_t(slot: c_int, set: c_int, t: c_int) -> c_int:
+    """
+    sv_set_event_t() - set the time of events to be sent by sv_send_event()
+    Parameters:
+      slot;
+      set: 1 - set; 0 - reset (use automatic time setting - the default mode);
+      t: the time when the events occurred (in system ticks, SunVox time space).
+    Examples:
+      sv_set_event_t( slot, 1, 0 ) //not specified - further events will be processed as quickly as possible
+      sv_set_event_t( slot, 1, sv_get_ticks() ) //time when the events will be processed = NOW + sound latancy * 2
+    """
 
 
 send_event = decorated_fn(
@@ -483,6 +547,24 @@ get_song_length_lines = decorated_fn(
 )
 
 
+@sunvox_fn(_s.sv_get_time_map)
+def get_time_map(
+    slot: c_int, start_line: c_int, len: c_int, dest: POINTER(c_uint32), flags: c_int
+) -> c_int:
+    """
+    sv_get_time_map()
+    Parameters:
+      slot;
+      start_line - first line to read (usually 0);
+      len - number of lines to read;
+      dest - pointer to the buffer (size = len*sizeof(uint32_t)) for storing the map values;
+      flags:
+        SV_TIME_MAP_SPEED: dest[X] = BPM | ( TPL << 16 ) (speed at the beginning of line X);
+        SV_TIME_MAP_FRAMECNT: dest[X] = frame counter at the beginning of line X;
+    Return value: 0 if successful, or negative value in case of some error.
+    """
+
+
 new_module = decorated_fn(
     _s.sv_new_module,
     [c_int, c_char_p, c_char_p, c_int, c_int, c_int],
@@ -598,7 +680,7 @@ sampler_load_from_memory = decorated_fn(
     c_int,
     False,
     """
-    int sv_sampler_load_from_memory( int slot, int sampler_module, void* data, unsigned int data_size, int sample_slot ) SUNVOX_FN_ATTR;
+    int sv_sampler_load_from_memory( int slot, int sampler_module, void* data, unsigned int data_size, int sample_slot );
 
     Load a sample to already created Sampler.
 
@@ -616,6 +698,14 @@ get_number_of_modules = decorated_fn(
     int sv_get_number_of_modules( int slot );
     """,
 )
+
+
+@sunvox_fn(_s.sv_find_module)
+def find_module(slot: c_int, name: c_char_p) -> c_int:
+    """
+    sv_find_module() - find a module by name;
+    return value: module number or -1 (if not found);
+    """
 
 
 get_module_flags = decorated_fn(
@@ -684,6 +774,15 @@ get_module_color = decorated_fn(
 )
 
 
+@sunvox_fn(_s.sv_get_module_finetune)
+def get_module_finetune(slot: c_int, mod_num: c_int) -> c_uint32:
+    """
+    sv_get_module_finetune() - get the relative note and finetune of the module;
+    return value: ( finetune & 0xFFFF ) | ( ( relative_note & 0xFFFF ) << 16 ).
+    Use SV_GET_MODULE_FINETUNE() macro to unpack finetune and relative_note.
+    """
+
+
 get_module_scope2 = decorated_fn(
     _s.sv_get_module_scope2,
     [c_int, c_int, c_int, POINTER(c_short), c_uint],
@@ -697,6 +796,39 @@ get_module_scope2 = decorated_fn(
                                        unsigned int samples_to_read );
     """,
 )
+
+
+@sunvox_fn(_s.sv_module_curve)
+def module_curve(
+    slot: c_int,
+    mod_num: c_int,
+    curve_num: c_int,
+    data: POINTER(c_float),
+    len: c_int,
+    w: c_int,
+) -> c_int:
+    """
+    sv_module_curve() - access to the curve values of the specified module
+    Parameters:
+      slot;
+      mod_num - module number;
+      curve_num - curve number;
+      data - destination or source buffer;
+      len - number of items to read/write;
+      w - read (0) or write (1).
+    return value: number of items processed successfully.
+
+    Available curves (Y=CURVE[X]):
+      MultiSynth:
+        0 - X = note (0..127); Y = velocity (0..1); 128 items;
+        1 - X = velocity (0..256); Y = velocity (0..1); 257 items;
+      WaveShaper:
+        0 - X = input (0..255); Y = output (0..1); 256 items;
+      MultiCtl:
+        0 - X = input (0..256); Y = output (0..1); 257 items;
+      Analog Generator, Generator:
+        0 - X = drawn waveform sample number (0..31); Y = volume (-1..1); 32 items;
+    """
 
 
 get_number_of_module_ctls = decorated_fn(
@@ -744,13 +876,22 @@ get_number_of_patterns = decorated_fn(
 )
 
 
+@sunvox_fn(_s.sv_find_pattern)
+def find_pattern(slot: c_int, name: c_char_p) -> c_int:
+    """
+    sv_find_pattern() - find a pattern by name;
+    return value: pattern number or -1 (if not found);
+    """
+
+
 get_pattern_x = decorated_fn(
     _s.sv_get_pattern_x,
     [c_int, c_int],
     c_int,
     False,
     """
-    int sv_get_pattern_x( int slot, int pat_num );
+    sv_get_pattern_xxxx - get pattern information
+    x - time (line number);
     """,
 )
 
@@ -761,7 +902,8 @@ get_pattern_y = decorated_fn(
     c_int,
     False,
     """
-    int sv_get_pattern_y( int slot, int pat_num );
+    sv_get_pattern_xxxx - get pattern information
+    y - vertical position on timeline;
     """,
 )
 
@@ -772,7 +914,8 @@ get_pattern_tracks = decorated_fn(
     c_int,
     False,
     """
-    int sv_get_pattern_tracks( int slot, int pat_num );
+    sv_get_pattern_xxxx - get pattern information
+    tracks - number of pattern tracks;
     """,
 )
 
@@ -783,9 +926,18 @@ get_pattern_lines = decorated_fn(
     c_int,
     False,
     """
-    int sv_get_pattern_lines( int slot, int pat_num );
+    sv_get_pattern_xxxx - get pattern information
+    lines - number of pattern lines;
     """,
 )
+
+
+@sunvox_fn(_s.sv_get_pattern_name)
+def get_pattern_name(slot: c_int, pat_num: c_int) -> c_char_p:
+    """
+    sv_get_pattern_xxxx - get pattern information
+    name - pattern name or NULL;
+    """
 
 
 get_pattern_data = decorated_fn(
@@ -876,15 +1028,19 @@ __all__ = [
     "unlock_slot",
     "init",
     "deinit",
+    "get_sample_rate",
+    "update_input",
     "load",
     "load_from_memory",
     "play",
     "play_from_beginning",
     "stop",
     "set_autostop",
+    "get_autostop",
     "end_of_song",
     "rewind",
     "volume",
+    "set_event_t",
     "send_event",
     "get_current_line",
     "get_current_line2",
@@ -894,6 +1050,7 @@ __all__ = [
     "get_song_tpl",
     "get_song_length_frames",
     "get_song_length_lines",
+    "get_time_map",
     "new_module",
     "remove_module",
     "connect_module",
@@ -909,15 +1066,19 @@ __all__ = [
     "get_module_name",
     "get_module_xy",
     "get_module_color",
+    "get_module_finetune",
     "get_module_scope2",
+    "module_curve",
     "get_number_of_module_ctls",
     "get_module_ctl_name",
     "get_module_ctl_value",
     "get_number_of_patterns",
+    "find_pattern",
     "get_pattern_x",
     "get_pattern_y",
     "get_pattern_tracks",
     "get_pattern_lines",
+    "get_pattern_name",
     "get_pattern_data",
     "pattern_mute",
     "get_ticks",

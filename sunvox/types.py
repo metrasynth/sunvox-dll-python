@@ -150,9 +150,18 @@ class SV_INIT_FLAG(IntEnum):
     ONE_THREAD = 1 << 4
 
 
+class SV_TIME_MAP(IntEnum):
+    SPEED = 0
+    FRAMECNT = 1
+    TYPE_MASK = 3
+
+
 class SV_MODULE(IntEnum):
-    FLAG_EXISTS = 1
-    FLAG_EFFECT = 2
+    FLAG_EXISTS = 1 << 0
+    FLAG_EFFECT = 1 << 1
+    FLAG_MUTE = 1 << 2
+    FLAG_SOLO = 1 << 3
+    FLAG_BYPASS = 1 << 4
     INPUTS_OFF = 16
     INPUTS_MASK = 255 << INPUTS_OFF
     OUTPUTS_OFF = 16 + 8
