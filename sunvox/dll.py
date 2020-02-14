@@ -711,7 +711,9 @@ def get_module_ctl_name(slot: c_int, mod_num: c_int, ctl_num: c_int) -> c_char_p
 
 
 @sunvox_fn(_s.sv_get_module_ctl_value)
-def get_module_ctl_value(slot: c_int, mod_num: c_int, ctl_num: c_int) -> c_int:
+def get_module_ctl_value(
+    slot: c_int, mod_num: c_int, ctl_num: c_int, scaled: c_int
+) -> c_int:
     pass
 
 
