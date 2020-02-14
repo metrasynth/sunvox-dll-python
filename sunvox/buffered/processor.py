@@ -12,9 +12,9 @@ class BufferedProcessor(Processor):
     def init(self, device, freq, channels, flags):
         super().init(device, freq, channels, flags)
         self.channels = channels
-        if flags & sunvox.types.SV_INIT_FLAG.AUDIO_INT16:
+        if flags & sunvox.types.INIT_FLAG.AUDIO_INT16:
             self.type_code = "h"
-        elif flags & sunvox.types.SV_INIT_FLAG.AUDIO_FLOAT32:
+        elif flags & sunvox.types.INIT_FLAG.AUDIO_FLOAT32:
             self.type_code = "f"
         self.type_size = {"h": 2, "f": 4}[self.type_code]
 

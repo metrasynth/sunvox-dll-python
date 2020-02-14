@@ -1,6 +1,6 @@
 import numpy
 from numpy import float32, int16, zeros
-from sunvox.api import SV_INIT_FLAG, Process
+from sunvox.api import INIT_FLAG, Process
 
 from .processor import BufferedProcessor
 
@@ -20,8 +20,8 @@ class BufferedProcess(Process):
         self.channels = channels
         self.data_type = data_type
         self.size = size
-        flags = SV_INIT_FLAG.USER_AUDIO_CALLBACK | SV_INIT_FLAG.ONE_THREAD
-        flags |= {int16: SV_INIT_FLAG.AUDIO_INT16, float32: SV_INIT_FLAG.AUDIO_FLOAT32}[
+        flags = INIT_FLAG.USER_AUDIO_CALLBACK | INIT_FLAG.ONE_THREAD
+        flags |= {int16: INIT_FLAG.AUDIO_INT16, float32: INIT_FLAG.AUDIO_FLOAT32}[
             self.data_type
         ]
         self.init(None, self.freq, self.channels, flags)
