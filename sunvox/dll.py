@@ -19,11 +19,10 @@ from ctypes import (
     POINTER,
     c_char_p,
     c_int,
-    c_short,
-    c_uint,
     c_void_p,
     c_uint32,
     c_float,
+    c_int16,
 )
 from ctypes.util import find_library
 from textwrap import dedent
@@ -78,15 +77,6 @@ _s = loader.LoadLibrary(_sunvox_lib_path)
 GenericFunction = Callable[..., Any]
 
 
-def decorated_fn(fn, argtypes, restype, needs_lock, doc) -> GenericFunction:
-    fn.argtypes = argtypes
-    fn.restype = restype
-    fn.needs_lock = needs_lock
-    fn.sunvox_dll_fn = True
-    fn.__doc__ = dedent(doc).strip()
-    return fn
-
-
 def sunvox_fn(c_fn, needs_lock=False):
     """
     Decorate a ctypes function based on a function declaration's type annotations.
@@ -98,167 +88,43 @@ def sunvox_fn(c_fn, needs_lock=False):
     def decorator(fn: GenericFunction) -> GenericFunction:
         spec = inspect.getfullargspec(fn)
         annotations = spec.annotations
+        arg_sig = ", ".join(f"{arg}: {annotations[arg].__name__}" for arg in spec.args)
+        signature = f"{fn.__name__}({arg_sig})"
+        doc = dedent(fn.__doc__ or "").strip()
         c_fn.argtypes = [annotations[arg] for arg in spec.args]
         c_fn.restype = annotations["return"]
         c_fn.needs_lock = needs_lock
         c_fn.sunvox_dll_fn = True
-        c_fn.__doc__ = dedent(fn.__doc__).strip()
+        c_fn.__doc__ = f"{signature}\n\n{doc}"
         return c_fn
 
     return decorator
 
 
-audio_callback = decorated_fn(
-    _s.sv_audio_callback,
-    [c_void_p, c_int, c_int, c_uint],
-    c_int,
-    False,
+@sunvox_fn(_s.sv_init)
+def init(config: c_char_p, freq: c_int, channels: c_int, flags: c_uint32) -> c_int:
     """
-    int sv_audio_callback( void* buf, int frames, int latency, unsigned int out_time );
-
-    Get the next piece of SunVox audio from the Output module.
-
-    With sv_audio_callback() you can ignore the built-in SunVox sound output mechanism and use some other sound system.
-
-    SV_INIT_FLAG_USER_AUDIO_CALLBACK flag in sv_init() mus be set.
+    global sound system init
 
     Parameters:
-      buf - destination buffer of type signed short (if SV_INIT_FLAG_AUDIO_INT16 used in sv_init())
-            or float (if SV_INIT_FLAG_AUDIO_FLOAT32 used in sv_init());
-            stereo data will be interleaved in this buffer: LRLR... ; where the LR is the one frame (Left+Right channels);
-      frames - number of frames in destination buffer;
-      latency - audio latency (in frames);
-      out_time - buffer output time (in system ticks);
-
-    Return values:
-      0 - silence (buffer filled with zeroes);
-      1 - some signal.
-
-    Example:
-      user_out_time = ... ; //output time in user time space (NOT SunVox time space!)
-      user_cur_time = ... ; //current time (user time space)
-      user_ticks_per_second = ... ; //ticks per second (user time space)
-      user_latency = user_out_time - use_cur_time; //latency in user time space
-      unsigned int sunvox_latency = ( user_latency * sv_get_ticks_per_second() ) / user_ticks_per_second; //latency in SunVox time space
-      unsigned int latency_frames = ( user_latency * sample_rate_Hz ) / user_ticks_per_second; //latency in frames
-      sv_audio_callback( buf, frames, latency_frames, sv_get_ticks() + sunvox_latency );
-    """,
-)
-
-
-audio_callback2 = decorated_fn(
-    _s.sv_audio_callback2,
-    [c_void_p, c_int, c_int, c_uint, c_int, c_int, c_void_p],
-    c_int,
-    False,
-    """
-    int sv_audio_callback2( void* buf, int frames, int latency, unsigned int out_time, int in_type, int in_channels, void* in_buf );
-
-    Send some data to the Input module and receive the filtered data from the Output module.
-
-    It's the same as sv_audio_callback() but you also can specify the input buffer.
-
-    Parameters:
-      ...
-      in_type - input buffer type: 0 - signed short (16bit integer); 1 - float (32bit floating point);
-      in_channels - number of input channels;
-      in_buf - input buffer; stereo data will be interleaved in this buffer: LRLR... ; where the LR is the one frame (Left+Right channels);
-    """,
-)
-
-
-open_slot = decorated_fn(
-    _s.sv_open_slot,
-    [c_int],
-    c_int,
-    False,
-    """
-    int sv_open_slot( int slot );
-
-    Open sound slot for SunVox.
-
-    You can use several slots simultaneously (each slot with its own SunVox engine)
-    """,
-)
-
-
-close_slot = decorated_fn(
-    _s.sv_close_slot,
-    [c_int],
-    c_int,
-    False,
-    """
-    int sv_close_slot( int slot );
-
-    Close sound slot for SunVox.
-
-    You can use several slots simultaneously (each slot with its own SunVox engine)
-    """,
-)
-
-
-lock_slot = decorated_fn(
-    _s.sv_lock_slot,
-    [c_int],
-    c_int,
-    False,
-    """
-    int sv_lock_slot( int slot );
-
-    Lock sound slot for SunVox.
-
-    You can use several slots simultaneously (each slot with its own SunVox engine)
-    """,
-)
-
-
-unlock_slot = decorated_fn(
-    _s.sv_unlock_slot,
-    [c_int],
-    c_int,
-    False,
-    """
-    int sv_unlock_slot( int slot );
-
-    Unlock sound slot for SunVox.
-
-    You can use several slots simultaneously (each slot with its own SunVox engine)
-    """,
-)
-
-
-init = decorated_fn(
-    _s.sv_init,
-    [c_char_p, c_int, c_int, c_int],
-    c_uint,
-    False,
-    """
-    int sv_init( const char* config, int freq, int channels, unsigned int flags );
-
-    Global sound system init.
-
-    Parameters:
-      config - string with additional configuration in the following format: "option_name=value|option_name=value";
-               example: "buffer=1024|audiodriver=alsa|audiodevice=hw:0,0";
-               use null if you agree to the automatic configuration;
-      freq - sample rate (Hz); min - 44100;
+      config -
+        string with additional configuration in the following format:
+          "option_name=value|option_name=value";
+        example: "buffer=1024|audiodriver=alsa|audiodevice=hw:0,0";
+        use null if you agree to the automatic configuration;
+      freq -
+        desired sample rate (Hz); min - 44100;
+        the actual rate may be different, if INIT_FLAG.USER_AUDIO_CALLBACK is not set;
       channels - only 2 supported now;
-      flags - mix of the SV_INIT_FLAG_xxx flags.
-    """,
-)
-
-
-deinit = decorated_fn(
-    _s.sv_deinit,
-    [],
-    c_int,
-    False,
+      flags - mix of the INIT_FLAG.xxx flags.
     """
-    int sv_deinit( void );
 
-    Global sound system deinit.
-    """,
-)
+
+@sunvox_fn(_s.sv_deinit)
+def deinit() -> c_int:
+    """
+    global sound system deinit
+    """
 
 
 @sunvox_fn(_s.sv_update_input)
@@ -268,283 +134,343 @@ def get_sample_rate() -> c_int:
     """
 
 
-update_input = decorated_fn(
-    _s.sv_update_input,
-    [],
-    c_int,
-    False,
+@sunvox_fn(_s.sv_update_input)
+def update_input() -> c_int:
     """
-    int sv_update_input( void );
-
     handle input ON/OFF requests to enable/disable input ports of the sound card
     (for example, after the Input module creation).
 
     Call it from the main thread only, where the SunVox sound stream is not locked.
-    """,
-)
-
-
-load = decorated_fn(
-    _s.sv_load,
-    [c_int, c_char_p],
-    c_int,
-    False,
     """
-    int sv_load( int slot, const char* name );
-
-    Load SunVox project from the file.
-    """,
-)
 
 
-load_from_memory = decorated_fn(
-    _s.sv_load_from_memory,
-    [c_int, c_void_p, c_uint],
-    c_int,
-    False,
+@sunvox_fn(_s.sv_audio_callback)
+def audio_callback(
+    buf: c_void_p, frames: c_int, latency: c_int, out_time: c_uint32
+) -> c_int:
     """
-    int sv_load_from_memory( int slot, void* data, unsigned int data_size );
+    get the next piece of SunVox audio from the Output module.
 
-    Load SunVox project from the memory block.
-    """,
-)
+    With audio_callback() you can ignore the built-in SunVox sound output mechanism
+    and use some other sound system.
 
+    INIT_FLAG.USER_AUDIO_CALLBACK flag in sv_init() mus be set.
 
-play = decorated_fn(
-    _s.sv_play,
-    [c_int],
-    c_int,
-    False,
+    Parameters:
+      buf -
+        destination buffer of type int16_t (if INIT_FLAG.AUDIO_INT16 used in init())
+          or float (if INIT_FLAG.AUDIO_FLOAT32 used in init());
+        stereo data will be interleaved in this buffer: LRLR... ;
+        where the LR is the one frame (Left+Right channels);
+      frames - number of frames in destination buffer;
+      latency - audio latency (in frames);
+      out_time - buffer output time (in system ticks, SunVox time space);
+
+    Return values: 0 - silence (buffer filled with zeroes); 1 - some signal.
+
+    Example 1 (simplified, without accurate time sync) - suitable for most cases:
+      sv_audio_callback( buf, frames, 0, sv_get_ticks() );
+
+    Example 2 (accurate time sync) - when you need to maintain exact time intervals
+                                     between incoming events (notes, commands, etc.):
+      user_out_time = ... ; //output time in user time space
+                            //(depends on your own implementation)
+      user_cur_time = ... ; //current time in user time space
+      user_ticks_per_second = ... ; //ticks per second in user time space
+      user_latency = user_out_time - user_cur_time; //latency in user time space
+      uint32_t sunvox_latency =
+        ( user_latency * sv_get_ticks_per_second() ) / user_ticks_per_second;
+        //latency in SunVox time space
+      uint32_t latency_frames =
+        ( user_latency * sample_rate_Hz ) / user_ticks_per_second;
+        //latency in frames
+      sv_audio_callback( buf, frames, latency_frames, sv_get_ticks() + sunvox_latency );
     """
-    int sv_play( int slot );
-    """,
-)
 
 
-play_from_beginning = decorated_fn(
-    _s.sv_play_from_beginning,
-    [c_int],
-    c_int,
-    False,
+@sunvox_fn(_s.sv_audio_callback2)
+def audio_callback2(
+    buf: c_void_p,
+    frames: c_int,
+    latency: c_int,
+    out_time: c_uint32,
+    in_type: c_int,
+    in_channels: c_int,
+    in_buf: c_void_p,
+) -> c_int:
     """
-    int sv_play_from_beginning( int slot );
-    """,
-)
+    send some data to the Input module and receive the filtered data from the Output
+    module.
 
+    It's the same as sv_audio_callback() but you also can specify the input buffer.
 
-stop = decorated_fn(
-    _s.sv_stop,
-    [c_int],
-    c_int,
-    False,
+    Parameters:
+      ...
+      in_type - input buffer type:
+        0 - int16_t (16bit integer);
+        1 - float (32bit floating point);
+      in_channels - number of input channels;
+      in_buf -
+        input buffer;
+        stereo data must be interleaved in this buffer: LRLR... ;
+        where the LR is the one frame (Left+Right channels);
     """
-    int sv_stop( int slot );
-    """,
-)
 
 
-set_autostop = decorated_fn(
-    _s.sv_set_autostop,
-    [c_int, c_int],
-    c_int,
-    False,
+@sunvox_fn(_s.sv_open_slot)
+def open_slot(slot: c_int) -> c_int:
     """
-    int sv_set_autostop( int slot, int autostop );
+    open sound slot for SunVox.
 
-    Autostop values:
+    You can use several slots simultaneously (each slot with its own SunVox engine).
+
+    Use lock/unlock when you simultaneously read and modify SunVox data from different
+    threads (for the same slot);
+
+    example:
+      thread 1: sv_lock_slot(0); sv_get_module_flags(0,mod1); sv_unlock_slot(0);
+      thread 2: sv_lock_slot(0); sv_remove_module(0,mod2); sv_unlock_slot(0);
+
+    Some functions (marked as "USE LOCK/UNLOCK") can't work without lock/unlock at all.
+    """
+
+
+@sunvox_fn(_s.sv_close_slot)
+def close_slot(slot: c_int) -> c_int:
+    """
+    close sound slot for SunVox.
+
+    You can use several slots simultaneously (each slot with its own SunVox engine).
+
+    Use lock/unlock when you simultaneously read and modify SunVox data from different
+    threads (for the same slot);
+
+    example:
+      thread 1: sv_lock_slot(0); sv_get_module_flags(0,mod1); sv_unlock_slot(0);
+      thread 2: sv_lock_slot(0); sv_remove_module(0,mod2); sv_unlock_slot(0);
+
+    Some functions (marked as "USE LOCK/UNLOCK") can't work without lock/unlock at all.
+    """
+
+
+@sunvox_fn(_s.sv_lock_slot)
+def lock_slot(slot: c_int) -> c_int:
+    """
+    lock sound slot for SunVox.
+
+    You can use several slots simultaneously (each slot with its own SunVox engine).
+
+    Use lock/unlock when you simultaneously read and modify SunVox data from different
+    threads (for the same slot);
+
+    example:
+      thread 1: sv_lock_slot(0); sv_get_module_flags(0,mod1); sv_unlock_slot(0);
+      thread 2: sv_lock_slot(0); sv_remove_module(0,mod2); sv_unlock_slot(0);
+
+    Some functions (marked as "USE LOCK/UNLOCK") can't work without lock/unlock at all.
+    """
+
+
+@sunvox_fn(_s.sv_unlock_slot)
+def unlock_slot(slot: c_int) -> c_int:
+    """
+    unlock sound slot for SunVox.
+
+    You can use several slots simultaneously (each slot with its own SunVox engine).
+
+    Use lock/unlock when you simultaneously read and modify SunVox data from different
+    threads (for the same slot);
+
+    example:
+      thread 1: sv_lock_slot(0); sv_get_module_flags(0,mod1); sv_unlock_slot(0);
+      thread 2: sv_lock_slot(0); sv_remove_module(0,mod2); sv_unlock_slot(0);
+
+    Some functions (marked as "USE LOCK/UNLOCK") can't work without lock/unlock at all.
+    """
+
+
+@sunvox_fn(_s.sv_load)
+def load(slot: c_int, name: c_char_p) -> c_int:
+    """
+    load SunVox project from the file.
+    """
+
+
+@sunvox_fn(_s.sv_load_from_memory)
+def load_from_memory(slot: c_int, data: c_void_p, data_size: c_uint32) -> c_int:
+    """
+    load SunVox project from the memory block.
+    """
+
+
+@sunvox_fn(_s.sv_play)
+def play(slot: c_int) -> c_int:
+    """
+    play from the current position
+    """
+
+
+@sunvox_fn(_s.sv_play_from_beginning)
+def play_from_beginning(slot: c_int) -> c_int:
+    """
+    play from the beginning (line 0)
+    """
+
+
+@sunvox_fn(_s.sv_stop)
+def stop(slot: c_int) -> c_int:
+    """
+    first call - stop playing;
+    second call - reset all SunVox activity and switch the engine to standby mode.
+    """
+
+
+@sunvox_fn(_s.sv_set_autostop)
+def set_autostop(slot: c_int, autostop: c_int) -> c_int:
+    """
+    autostop values:
       0 - disable autostop;
       1 - enable autostop.
 
     When disabled, song is playing infinitely in the loop.
-    """,
-)
+    """
 
 
 @sunvox_fn(_s.sv_get_autostop)
 def get_autostop(slot: c_int) -> c_int:
     """
-    sv_set_autostop(), sv_get_autostop() -
-    autostop values: 0 - disable autostop; 1 - enable autostop.
+    autostop values:
+      0 - disable autostop;
+      1 - enable autostop.
+
     When disabled, song is playing infinitely in the loop.
     """
 
 
-end_of_song = decorated_fn(
-    _s.sv_end_of_song,
-    [c_int],
-    c_int,
-    False,
+@sunvox_fn(_s.sv_end_of_song)
+def end_of_song(slot: c_int) -> c_int:
     """
-    int sv_end_of_song( int slot );
-
     return values:
       0 - song is playing now;
       1 - stopped.
-    """,
-)
-
-
-rewind = decorated_fn(
-    _s.sv_rewind,
-    [c_int, c_int],
-    c_int,
-    False,
     """
-    int sv_rewind( int slot, int line_num );
-    """,
-)
 
 
-volume = decorated_fn(
-    _s.sv_volume,
-    [c_int, c_int],
-    c_int,
-    False,
+@sunvox_fn(_s.sv_rewind)
+def rewind(slot: c_int, line_num: c_int) -> c_int:
+    pass
+
+
+@sunvox_fn(_s.sv_volume)
+def volume(slot: c_int, vol: c_int) -> c_int:
     """
-    int sv_volume( int slot, int vol );
+    set volume from 0 (min) to 256 (max 100%);
 
-    sv_volume() - set volume from 0 (min) to 256 (max 100%);
     negative values are ignored;
+
     return value: previous volume;
-    """,
-)
+    """
 
 
 @sunvox_fn(_s.sv_set_event_t)
 def set_event_t(slot: c_int, set: c_int, t: c_int) -> c_int:
     """
-    sv_set_event_t() - set the time of events to be sent by sv_send_event()
+    set the time of events to be sent by sv_send_event()
+
     Parameters:
       slot;
-      set: 1 - set; 0 - reset (use automatic time setting - the default mode);
+      set:
+        1 - set;
+        0 - reset (use automatic time setting - the default mode);
       t: the time when the events occurred (in system ticks, SunVox time space).
+
     Examples:
-      sv_set_event_t( slot, 1, 0 ) //not specified - further events will be processed as quickly as possible
-      sv_set_event_t( slot, 1, sv_get_ticks() ) //time when the events will be processed = NOW + sound latancy * 2
+      sv_set_event_t( slot, 1, 0 )
+        //not specified - further events will be processed as quickly as possible
+      sv_set_event_t( slot, 1, sv_get_ticks() )
+        //time when the events will be processed = NOW + sound latancy * 2
     """
 
 
-send_event = decorated_fn(
-    _s.sv_send_event,
-    [c_int, c_int, c_int, c_int, c_int, c_int, c_int],
-    c_int,
-    False,
+@sunvox_fn(_s.sv_send_event)
+def send_event(
+    slot: c_int,
+    track_num: c_int,
+    note: c_int,
+    vel: c_int,
+    module: c_int,
+    ctl: c_int,
+    ctl_val: c_int,
+) -> c_int:
     """
-    int sv_send_event( int slot, int track_num, int note, int vel,
-                       int module, int ctl, int ctl_val );
-
-    Send some event (note ON, note OFF, controller change, etc.)
+    send an event (note ON, note OFF, controller change, etc.)
 
     Parameters:
       slot;
       track_num - track number within the pattern;
-      note: 0 - nothing; 1..127 - note num; 128 - note off; 129, 130... - see NOTECMD_xxx defines;
+      note:
+        0 - nothing;
+        1..127 - note num;
+        128 - note off;
+        129, 130... - see NOTECMD.xxx enums;
       vel: velocity 1..129; 0 - default;
-      module: 0 - nothing; 1..255 - module number + 1;
+      module: 0 (empty) or module number + 1 (1..65535);
       ctl: 0xCCEE. CC - number of a controller (1..255). EE - effect;
       ctl_val: value of controller or effect.
-    """,
-)
-
-
-get_current_line = decorated_fn(
-    _s.sv_get_current_line,
-    [c_int],
-    c_int,
-    False,
     """
-    int sv_get_current_line( int slot );
 
+
+@sunvox_fn(_s.sv_get_current_line)
+def get_current_line(slot: c_int) -> c_int:
+    """
     Get current line number
-    """,
-)
-
-
-get_current_line2 = decorated_fn(
-    _s.sv_get_current_line2,
-    [c_int],
-    c_int,
-    False,
     """
-    int sv_get_current_line2( int slot );
 
+
+@sunvox_fn(_s.sv_get_current_line2)
+def get_current_line2(slot: c_int) -> c_int:
+    """
     Get current line number in fixed point format 27.5
-    """,
-)
-
-
-get_current_signal_level = decorated_fn(
-    _s.sv_get_current_signal_level,
-    [c_int, c_int],
-    c_int,
-    False,
     """
-    int sv_get_current_signal_level( int slot, int channel );
 
+
+@sunvox_fn(_s.sv_get_current_signal_level)
+def get_current_signal_level(slot: c_int, channel: c_int) -> c_int:
+    """
     From 0 to 255
-    """,
-)
-
-
-get_song_name = decorated_fn(
-    _s.sv_get_song_name,
-    [c_int],
-    c_char_p,
-    False,
     """
-    const char* sv_get_song_name( int slot );
-    """,
-)
 
 
-get_song_bpm = decorated_fn(
-    _s.sv_get_song_bpm,
-    [c_int],
-    c_int,
-    False,
+@sunvox_fn(_s.sv_get_song_name)
+def get_song_name(slot: c_int) -> c_char_p:
+    pass
+
+
+@sunvox_fn(_s.sv_get_song_bpm)
+def get_song_bpm(slot: c_int) -> c_int:
+    pass
+
+
+@sunvox_fn(_s.sv_get_song_tpl)
+def get_song_tpl(slot: c_int) -> c_int:
+    pass
+
+
+@sunvox_fn(_s.sv_get_song_length_frames)
+def get_song_length_frames(slot: c_int) -> c_uint32:
     """
-    int sv_get_song_bpm( int slot );
-    """,
-)
-
-
-get_song_tpl = decorated_fn(
-    _s.sv_get_song_tpl,
-    [c_int],
-    c_int,
-    False,
-    """
-    int sv_get_song_tpl( int slot );
-    """,
-)
-
-
-get_song_length_frames = decorated_fn(
-    _s.sv_get_song_length_frames,
-    [c_int],
-    c_uint,
-    False,
-    """
-    unsigned int sv_get_song_length_frames( int slot );
-
     Get the project length in frames.
 
-    Frame is one discrete of the sound. Sample rate 44100 Hz means, that you hear 44100 frames per second.
-    """,
-)
-
-
-get_song_length_lines = decorated_fn(
-    _s.sv_get_song_length_lines,
-    [c_int],
-    c_uint,
-    False,
+    Frame is one discrete of the sound. Sample rate 44100 Hz means, that you hear 44100
+    frames per second.
     """
-    unsigned int sv_get_song_length_lines( int slot );
 
+
+@sunvox_fn(_s.sv_get_song_length_lines)
+def get_song_length_lines(slot: c_int) -> c_uint32:
+    """
     Get the project length in lines.
-    """,
-)
+    """
 
 
 @sunvox_fn(_s.sv_get_time_map)
@@ -552,250 +478,191 @@ def get_time_map(
     slot: c_int, start_line: c_int, len: c_int, dest: POINTER(c_uint32), flags: c_int
 ) -> c_int:
     """
-    sv_get_time_map()
     Parameters:
       slot;
       start_line - first line to read (usually 0);
       len - number of lines to read;
-      dest - pointer to the buffer (size = len*sizeof(uint32_t)) for storing the map values;
+      dest -
+        pointer to the buffer
+        (size = len*sizeof(uint32_t)) for storing the map values;
       flags:
-        SV_TIME_MAP_SPEED: dest[X] = BPM | ( TPL << 16 ) (speed at the beginning of line X);
-        SV_TIME_MAP_FRAMECNT: dest[X] = frame counter at the beginning of line X;
+        TIME_MAP.SPEED: dest[X] = BPM | ( TPL << 16 )
+          (speed at the beginning of line X);
+        TIME_MAP.FRAMECNT: dest[X] = frame counter at the beginning of line X;
+
     Return value: 0 if successful, or negative value in case of some error.
     """
 
 
-new_module = decorated_fn(
-    _s.sv_new_module,
-    [c_int, c_char_p, c_char_p, c_int, c_int, c_int],
-    c_int,
-    True,
+@sunvox_fn(_s.sv_new_module, needs_lock=True)
+def new_module(
+    slot: c_int, type: c_char_p, name: c_char_p, x: c_int, y: c_int, z: c_int
+) -> c_int:
     """
-    int sv_new_module( int slot, const char* type, const char* name, int x, int y, int z );
-
     Create a new module.
-
-    USE LOCK/UNLOCK!
-    """,
-)
-
-
-remove_module = decorated_fn(
-    _s.sv_remove_module,
-    [c_int, c_int],
-    c_int,
-    True,
     """
-    int sv_remove_module( int slot, int mod_num );
 
+
+@sunvox_fn(_s.sv_remove_module, needs_lock=True)
+def remove_module(slot: c_int, mod_num: c_int) -> c_int:
+    """
     Remove selected module.
-
-    USE LOCK/UNLOCK!
-    """,
-)
-
-
-connect_module = decorated_fn(
-    _s.sv_connect_module,
-    [c_int, c_int, c_int],
-    c_int,
-    True,
     """
-    int sv_connect_module( int slot, int source, int destination );
 
+
+@sunvox_fn(_s.sv_connect_module, needs_lock=True)
+def connect_module(slot: c_int, source: c_int, destination: c_int) -> c_int:
+    """
     Connect the source to the destination.
-
-    USE LOCK/UNLOCK!
-    """,
-)
-
-
-disconnect_module = decorated_fn(
-    _s.sv_disconnect_module,
-    [c_int, c_int, c_int],
-    c_int,
-    True,
     """
-    int sv_disconnect_module( int slot, int source, int destination );
 
+
+@sunvox_fn(_s.sv_disconnect_module, needs_lock=True)
+def disconnect_module(slot: c_int, source: c_int, destination: c_int) -> c_int:
+    """
     Disconnect the source from the destination.
-
-    USE LOCK/UNLOCK!
-    """,
-)
-
-
-load_module = decorated_fn(
-    _s.sv_load_module,
-    [c_int, c_char_p, c_int, c_int, c_int],
-    c_int,
-    False,
     """
-    int sv_load_module( int slot, const char* file_name, int x, int y, int z );
-
-    Load a module or sample.
-
-    Supported file formats: sunsynth, xi, wav, aiff.
-
-    Return value: new module number or negative value in case of some error.
-    """,
-)
 
 
-load_module_from_memory = decorated_fn(
-    _s.sv_load_module_from_memory,
-    [c_int, c_void_p, c_uint, c_int, c_int, c_int],
-    c_int,
-    False,
+@sunvox_fn(_s.sv_load_module)
+def load_module(
+    slot: c_int, file_name: c_char_p, x: c_int, y: c_int, z: c_int
+) -> c_int:
     """
-    int sv_load_module_from_memory( int slot, void* data, unsigned int data_size, int x, int y, int z );
+    load a module or sample;
 
-    Load a module or sample from the memory block.
+    supported file formats: sunsynth, xi, wav, aiff;
 
-    Supported file formats: sunsynth, xi, wav, aiff.
-
-    Return value: new module number or negative value in case of some error.
-    """,
-)
-
-
-sampler_load = decorated_fn(
-    _s.sv_sampler_load,
-    [c_int, c_int, c_char_p, c_int],
-    c_int,
-    False,
+    return value: new module number or negative value in case of some error;
     """
-    int sv_sampler_load( int slot, int sampler_module, const char* file_name, int sample_slot );
-
-    Load a sample to already created Sampler.
-
-    To replace the whole sampler - set sample_slot to -1.
-    """,
-)
 
 
-sampler_load_from_memory = decorated_fn(
-    _s.sv_sampler_load_from_memory,
-    [c_int, c_int, c_void_p, c_uint, c_int],
-    c_int,
-    False,
+@sunvox_fn(_s.sv_load_module_from_memory)
+def load_module_from_memory(
+    slot: c_int, data: c_void_p, data_size: c_uint32, x: c_int, y: c_int, z: c_int
+) -> c_int:
     """
-    int sv_sampler_load_from_memory( int slot, int sampler_module, void* data, unsigned int data_size, int sample_slot );
-
-    Load a sample to already created Sampler.
-
-    To replace the whole sampler - set sample_slot to -1.
-    """,
-)
-
-
-get_number_of_modules = decorated_fn(
-    _s.sv_get_number_of_modules,
-    [c_int],
-    c_int,
-    False,
+    load a module or sample from the memory block
     """
-    int sv_get_number_of_modules( int slot );
-    """,
-)
+
+
+@sunvox_fn(_s.sv_sampler_load)
+def sampler_load(
+    slot: c_int, sampler_module: c_int, file_name: c_char_p, sample_slot: c_int
+) -> c_int:
+    """
+    load a sample to already created Sampler;
+    to replace the whole sampler - set sample_slot to -1;
+    """
+
+
+@sunvox_fn(_s.sv_sampler_load_from_memory)
+def sampler_load_from_memory(
+    slot: c_int,
+    sampler_module: c_int,
+    data: c_void_p,
+    data_size: c_uint32,
+    sample_slot: c_int,
+) -> c_int:
+    """
+    load a sample to already created Sampler;
+    to replace the whole sampler - set sample_slot to -1;
+    """
+
+
+@sunvox_fn(_s.sv_get_number_of_modules)
+def get_number_of_modules(slot: c_int) -> c_int:
+    pass
 
 
 @sunvox_fn(_s.sv_find_module)
 def find_module(slot: c_int, name: c_char_p) -> c_int:
     """
-    sv_find_module() - find a module by name;
+    find a module by name;
+
     return value: module number or -1 (if not found);
     """
 
 
-get_module_flags = decorated_fn(
-    _s.sv_get_module_flags,
-    [c_int, c_int],
-    c_uint,
-    False,
+@sunvox_fn(_s.sv_get_module_flags)
+def get_module_flags(slot: c_int, mod_num: c_int) -> c_uint32:
     """
-    unsigned int sv_get_module_flags( int slot, int mod_num );
-    """,
-)
-
-
-get_module_inputs = decorated_fn(
-    _s.sv_get_module_inputs,
-    [c_int, c_int],
-    POINTER(c_int),
-    False,
+    sunvox.types.MODULE.FLAG_xxx
     """
-    int* sv_get_module_inputs( int slot, int mod_num );
-    """,
-)
 
 
-get_module_outputs = decorated_fn(
-    _s.sv_get_module_outputs,
-    [c_int, c_int],
-    POINTER(c_int),
-    False,
+@sunvox_fn(_s.sv_get_module_inputs)
+def get_module_inputs(slot: c_int, mod_num: c_int) -> c_int:
     """
-    int* sv_get_module_outputs( int slot, int mod_num );
-    """,
-)
-
-
-get_module_name = decorated_fn(
-    _s.sv_get_module_name,
-    [c_int, c_int],
-    c_char_p,
-    False,
+    get pointers to the int[] arrays with the input links.
+    Number of inputs = ( module_flags & MODULE.INPUTS_MASK ) >> MODULE.INPUTS_OFF
     """
-    const char* sv_get_module_name( int slot, int mod_num );
-    """,
-)
 
 
-get_module_xy = decorated_fn(
-    _s.sv_get_module_xy,
-    [c_int, c_int],
-    c_uint,
-    False,
+@sunvox_fn(_s.sv_get_module_outputs)
+def get_module_outputs(slot: c_int, mod_num: c_int) -> c_int:
     """
-    unsigned int sv_get_module_xy( int slot, int mod_num );
-    """,
-)
-
-
-get_module_color = decorated_fn(
-    _s.sv_get_module_color,
-    [c_int, c_int],
-    c_int,
-    False,
+    get pointers to the int[] arrays with the output links.
+    Number of outputs = ( module_flags & MODULE.OUTPUTS_MASK ) >> MODULE.OUTPUTS_OFF
     """
-    int sv_get_module_color( int slot, int mod_num );
-    """,
-)
+
+
+@sunvox_fn(_s.sv_get_module_name)
+def get_module_name(slot: c_int, mod_num: c_int) -> c_char_p:
+    pass
+
+
+@sunvox_fn(_s.sv_get_module_xy)
+def get_module_xy(slot: c_int, mod_num: c_int) -> c_uint32:
+    """
+    get module XY coordinates packed in a single uint32 value:
+
+    ( x & 0xFFFF ) | ( ( y & 0xFFFF ) << 16 )
+
+    Normal working area: 0x0 ... 1024x1024
+    Center: 512x512
+
+    Use GET_MODULE_XY() macro to unpack X and Y.
+    """
+
+
+@sunvox_fn(_s.sv_get_module_color)
+def get_module_color(slot: c_int, mod_num: c_int) -> c_int:
+    """
+    get module color in the following format: 0xBBGGRR
+    """
 
 
 @sunvox_fn(_s.sv_get_module_finetune)
 def get_module_finetune(slot: c_int, mod_num: c_int) -> c_uint32:
     """
-    sv_get_module_finetune() - get the relative note and finetune of the module;
+    get the relative note and finetune of the module;
+
     return value: ( finetune & 0xFFFF ) | ( ( relative_note & 0xFFFF ) << 16 ).
-    Use SV_GET_MODULE_FINETUNE() macro to unpack finetune and relative_note.
+
+    Use GET_MODULE_FINETUNE() macro to unpack finetune and relative_note.
     """
 
 
-get_module_scope2 = decorated_fn(
-    _s.sv_get_module_scope2,
-    [c_int, c_int, c_int, POINTER(c_short), c_uint],
-    c_uint,
-    False,
+@sunvox_fn(_s.sv_get_module_scope2)
+def get_module_scope2(
+    slot: c_int,
+    mod_num: c_int,
+    channel: c_int,
+    dest_buf: POINTER(c_int16),
+    samples_to_read: c_uint32,
+) -> c_uint32:
     """
-    //sv_get_module_scope2() return value = received number of samples
-        (may be less or equal to samples_to_read).
-    unsigned int sv_get_module_scope2( int slot, int mod_num, int channel,
-                                       signed short* read_buf,
-                                       unsigned int samples_to_read );
-    """,
-)
+    return value = received number of samples (may be less or equal to samples_to_read).
+
+    Example:
+      int16_t buf[ 1024 ];
+      int received = sv_get_module_scope2( slot, mod_num, 0, buf, 1024 );
+      //buf[ 0 ] = value of the first sample (-32768...32767);
+      //buf[ 1 ] = value of the second sample;
+      //...
+      //buf[ received - 1 ] = value of the last received sample;
+    """
 
 
 @sunvox_fn(_s.sv_module_curve)
@@ -808,7 +675,8 @@ def module_curve(
     w: c_int,
 ) -> c_int:
     """
-    sv_module_curve() - access to the curve values of the specified module
+    access to the curve values of the specified module
+
     Parameters:
       slot;
       mod_num - module number;
@@ -816,6 +684,7 @@ def module_curve(
       data - destination or source buffer;
       len - number of items to read/write;
       w - read (0) or write (1).
+
     return value: number of items processed successfully.
 
     Available curves (Y=CURVE[X]):
@@ -831,189 +700,145 @@ def module_curve(
     """
 
 
-get_number_of_module_ctls = decorated_fn(
-    _s.sv_get_number_of_module_ctls,
-    [c_int, c_int],
-    c_int,
-    False,
-    """
-    int sv_get_number_of_module_ctls( int slot, int mod_num );
-    """,
-)
+@sunvox_fn(_s.sv_get_number_of_module_ctls)
+def get_number_of_module_ctls(slot: c_int, mod_num: c_int) -> c_int:
+    pass
 
 
-get_module_ctl_name = decorated_fn(
-    _s.sv_get_module_ctl_name,
-    [c_int, c_int, c_int],
-    c_char_p,
-    False,
-    """
-    const char* sv_get_module_ctl_name( int slot, int mod_num, int ctl_num );
-    """,
-)
+@sunvox_fn(_s.sv_get_module_ctl_name)
+def get_module_ctl_name(slot: c_int, mod_num: c_int, ctl_num: c_int) -> c_char_p:
+    pass
 
 
-get_module_ctl_value = decorated_fn(
-    _s.sv_get_module_ctl_value,
-    [c_int, c_int, c_int, c_int],
-    c_int,
-    False,
-    """
-    int sv_get_module_ctl_value( int slot, int mod_num, int ctl_num,
-                                 int scaled );
-    """,
-)
+@sunvox_fn(_s.sv_get_module_ctl_value)
+def get_module_ctl_value(slot: c_int, mod_num: c_int, ctl_num: c_int) -> c_int:
+    pass
 
 
-get_number_of_patterns = decorated_fn(
-    _s.sv_get_number_of_patterns,
-    [c_int],
-    c_int,
-    False,
-    """
-    int sv_get_number_of_patterns( int slot );
-    """,
-)
+@sunvox_fn(_s.sv_get_number_of_patterns)
+def get_number_of_patterns(slot: c_int) -> c_int:
+    pass
 
 
 @sunvox_fn(_s.sv_find_pattern)
 def find_pattern(slot: c_int, name: c_char_p) -> c_int:
     """
-    sv_find_pattern() - find a pattern by name;
+    find a pattern by name;
+
     return value: pattern number or -1 (if not found);
     """
 
 
-get_pattern_x = decorated_fn(
-    _s.sv_get_pattern_x,
-    [c_int, c_int],
-    c_int,
-    False,
+@sunvox_fn(_s.sv_get_pattern_x)
+def get_pattern_x(slot: c_int, pat_num: c_int) -> c_int:
     """
-    sv_get_pattern_xxxx - get pattern information
-    x - time (line number);
-    """,
-)
+    get pattern information
+
+    x - time (line number)
+    """
 
 
-get_pattern_y = decorated_fn(
-    _s.sv_get_pattern_y,
-    [c_int, c_int],
-    c_int,
-    False,
+@sunvox_fn(_s.sv_get_pattern_y)
+def get_pattern_y(slot: c_int, pat_num: c_int) -> c_int:
     """
-    sv_get_pattern_xxxx - get pattern information
+    get pattern information
+
     y - vertical position on timeline;
-    """,
-)
-
-
-get_pattern_tracks = decorated_fn(
-    _s.sv_get_pattern_tracks,
-    [c_int, c_int],
-    c_int,
-    False,
     """
-    sv_get_pattern_xxxx - get pattern information
+
+
+@sunvox_fn(_s.sv_get_pattern_tracks)
+def get_pattern_tracks(slot: c_int, pat_num: c_int) -> c_int:
+    """
+    get pattern information
+
     tracks - number of pattern tracks;
-    """,
-)
-
-
-get_pattern_lines = decorated_fn(
-    _s.sv_get_pattern_lines,
-    [c_int, c_int],
-    c_int,
-    False,
     """
-    sv_get_pattern_xxxx - get pattern information
+
+
+@sunvox_fn(_s.sv_get_pattern_lines)
+def get_pattern_lines(slot: c_int, pat_num: c_int) -> c_int:
+    """
+    get pattern information
+
     lines - number of pattern lines;
-    """,
-)
+    """
 
 
 @sunvox_fn(_s.sv_get_pattern_name)
 def get_pattern_name(slot: c_int, pat_num: c_int) -> c_char_p:
     """
-    sv_get_pattern_xxxx - get pattern information
+    get pattern information
+
     name - pattern name or NULL;
     """
 
 
-get_pattern_data = decorated_fn(
-    _s.sv_get_pattern_data,
-    [c_int, c_int],
-    POINTER(sunvox_note),
-    False,
+@sunvox_fn(_s.sv_get_pattern_data)
+def get_pattern_data(slot: c_int, pat_num: c_int) -> POINTER(sunvox_note):
     """
-    //How to use sv_get_pattern_data():
-    //  int pat_tracks = sv_get_pattern_tracks( slot, pat_num );
-    //  sunvox_note* data = sv_get_pattern_data( slot, pat_num );
-    //  sunvox_note* n = &data[ line_number * pat_tracks + track_number ];
-    //  ... and then do someting with note n
-    sunvox_note* sv_get_pattern_data( int slot, int pat_num );
-    """,
-)
+    get the pattern buffer (for reading and writing)
 
+    containing notes (events) in the following order:
+      line 0: note for track 0, note for track 1, ... note for track X;
+      line 1: note for track 0, note for track 1, ... note for track X;
+      ...
+      line X: ...
 
-pattern_mute = decorated_fn(
-    _s.sv_pattern_mute,
-    [c_int, c_int, c_int],
-    c_int,
-    True,
+    Example:
+      int pat_tracks = sv_get_pattern_tracks( slot, pat_num ); //number of tracks
+      sunvox_note* data = sv_get_pattern_data( slot, pat_num );
+        //get the buffer with all the pattern events (notes)
+      sunvox_note* n = &data[ line_number * pat_tracks + track_number ];
+      ... and then do someting with note n ...
     """
-    int sv_pattern_mute( int slot, int pat_num, int mute ); //USE LOCK/UNLOCK!
 
-    sv_pattern_mute() - mute (1) / unmute (0) specified pattern;
+
+@sunvox_fn(_s.sv_pattern_mute)
+def pattern_mute(slot: c_int, pat_num: c_int, mute: c_int) -> c_int:
+    """
+    mute (1) / unmute (0) specified pattern;
+
     negative values are ignored;
+
     return value: previous state (1 - muted; 0 - unmuted) or -1 (error);
-    """,
-)
-
-
-get_ticks = decorated_fn(
-    _s.sv_get_ticks,
-    [],
-    c_uint,
-    False,
     """
-    //SunVox engine uses its own time space, measured in ticks.
-    //Use sv_get_ticks() to get current tick counter (from 0 to 0xFFFFFFFF).
-    unsigned int sv_get_ticks( void );
-    """,
-)
 
 
-get_ticks_per_second = decorated_fn(
-    _s.sv_get_ticks_per_second,
-    [],
-    c_uint,
-    False,
+@sunvox_fn(_s.sv_get_ticks)
+def get_ticks() -> c_uint32:
     """
-    //SunVox engine uses its own time space, measured in ticks.
-    //Use sv_get_ticks_per_second() to get the number of SunVox
-    //  ticks per second.
-    unsigned int sv_get_ticks_per_second( void );
-    """,
-)
+    SunVox engine uses its own time space, measured in system ticks (don't confuse it
+    with the project ticks);
 
+    required when calculating the out_time parameter in the sv_audio_callback().
 
-get_log = decorated_fn(
-    _s.sv_get_log,
-    [c_int],
-    c_char_p,
-    False,
+    Use sv_get_ticks() to get current tick counter (from 0 to 0xFFFFFFFF).
     """
-    const char* sv_get_log( int size );
 
-    Get the latest messages from the log.
+
+@sunvox_fn(_s.sv_get_ticks_per_second)
+def get_ticks_per_second() -> c_uint32:
+    """
+    SunVox engine uses its own time space, measured in system ticks (don't confuse it
+    with the project ticks);
+
+    required when calculating the out_time parameter in the sv_audio_callback().
+
+    Use sv_get_ticks_per_second() to get the number of SunVox ticks per second.
+    """
+
+
+@sunvox_fn(_s.sv_get_log)
+def get_log(size: c_int) -> c_char_p:
+    """
+    get the latest messages from the log
 
     Parameters:
       size - max number of bytes to read.
 
     Return value: pointer to the null-terminated string with the latest log messages.
-    """,
-)
+    """
 
 
 __all__ = [
