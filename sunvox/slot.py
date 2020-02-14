@@ -1,15 +1,17 @@
 from collections import defaultdict
 from contextlib import contextmanager
-from ctypes import c_int, POINTER, c_uint32, c_char_p, c_float
+from ctypes import c_int, POINTER, c_uint32, c_char_p, c_float, c_int16
 from io import BytesIO
 from typing import Union, BinaryIO
 
 from . import dll
-
+from .types import sunvox_note
 
 FILENAME_ENCODING = "utf8"
 MAX_SLOTS = 4
 DEFAULT_ALLOCATION_MAP = [False] * MAX_SLOTS
+
+FileOrName = Union[c_char_p, bytes, BinaryIO]
 
 
 class NoSlotsAvailable(Exception):
@@ -21,7 +23,7 @@ class Slot(object):
 
     allocation_map = defaultdict(DEFAULT_ALLOCATION_MAP.copy)
 
-    def __init__(self, file=None, process=dll):
+    def __init__(self, file: FileOrName = None, process=dll):
         self.process = process
         self.number = self.next_available_slot(process)
         if self.number is None:
@@ -81,7 +83,7 @@ class Slot(object):
 
     unlock.__doc__ = dll.unlock_slot.__doc__
 
-    def load(self, file_or_name: Union[str, bytes, BinaryIO]):
+    def load(self, file_or_name: FileOrName) -> c_int:
         """Load SunVox project using a filename or file-like object."""
         if isinstance(file_or_name, str):
             file_or_name = file_or_name.encode(FILENAME_ENCODING)
@@ -90,7 +92,7 @@ class Slot(object):
         elif callable(getattr(file_or_name, "read", None)):
             return self.load_file(file_or_name)
 
-    def load_file(self, file: BinaryIO):
+    def load_file(self, file: BinaryIO) -> c_int:
         """Load SunVox project from a file-like object."""
         if isinstance(file, BytesIO):
             value = file.getvalue()
@@ -98,26 +100,26 @@ class Slot(object):
             value = file.read()
         return self.process.load_from_memory(self.number, value, len(value))
 
-    def load_filename(self, filename: str):
+    def load_filename(self, filename: c_char_p) -> c_int:
         """Load SunVox project using a filename."""
         return self.process.load(self.number, filename)
 
-    def play(self):
+    def play(self) -> c_int:
         return self.process.play(self.number)
 
     play.__doc__ = dll.play.__doc__
 
-    def play_from_beginning(self):
+    def play_from_beginning(self) -> c_int:
         return self.process.play_from_beginning(self.number)
 
     play_from_beginning.__doc__ = dll.play_from_beginning.__doc__
 
-    def stop(self):
+    def stop(self) -> c_int:
         return self.process.stop(self.number)
 
     stop.__doc__ = dll.stop.__doc__
 
-    def set_autostop(self, autostop):
+    def set_autostop(self, autostop: c_int) -> c_int:
         return self.process.set_autostop(self.number, autostop)
 
     set_autostop.__doc__ = dll.set_autostop.__doc__
@@ -127,17 +129,17 @@ class Slot(object):
 
     get_autostop.__doc__ = dll.get_autostop.__doc__
 
-    def end_of_song(self):
+    def end_of_song(self) -> c_int:
         return self.process.end_of_song(self.number)
 
     end_of_song.__doc__ = dll.end_of_song.__doc__
 
-    def rewind(self, line_num):
+    def rewind(self, line_num: c_int) -> c_int:
         return self.process.rewind(self.number, line_num)
 
     rewind.__doc__ = dll.rewind.__doc__
 
-    def volume(self, vol):
+    def volume(self, vol: c_int) -> c_int:
         return self.process.volume(self.number, vol)
 
     volume.__doc__ = dll.volume.__doc__
@@ -147,7 +149,15 @@ class Slot(object):
 
     set_event_t.__doc__ = dll.set_event_t.__doc__
 
-    def send_event(self, track_num, note, vel, module, ctl, ctl_val):
+    def send_event(
+        self,
+        track_num: c_int,
+        note: c_int,
+        vel: c_int,
+        module: c_int,
+        ctl: c_int,
+        ctl_val: c_int,
+    ) -> c_int:
         module_index = getattr(module, "index", None)
         if module_index is not None:
             module = module_index + 1
@@ -157,87 +167,92 @@ class Slot(object):
 
     send_event.__doc__ = dll.send_event.__doc__
 
-    def get_current_line(self):
+    def get_current_line(self) -> c_int:
         return self.process.get_current_line(self.number)
 
     get_current_line.__doc__ = dll.get_current_line.__doc__
 
-    def get_current_line2(self):
+    def get_current_line2(self) -> c_int:
         return self.process.get_current_line2(self.number)
 
     get_current_line2.__doc__ = dll.get_current_line2.__doc__
 
-    def get_current_signal_level(self, channel):
+    def get_current_signal_level(self, channel) -> c_int:
         return self.process.get_current_signal_level(self.number, channel)
 
     get_current_signal_level.__doc__ = dll.get_current_signal_level.__doc__
 
-    def get_song_name(self):
+    def get_song_name(self) -> c_char_p:
         return self.process.get_song_name(self.number)
 
     get_song_name.__doc__ = dll.get_song_name.__doc__
 
-    def get_song_bpm(self):
+    def get_song_bpm(self) -> c_int:
         return self.process.get_song_bpm(self.number)
 
     get_song_bpm.__doc__ = dll.get_song_bpm.__doc__
 
-    def get_song_tpl(self):
+    def get_song_tpl(self) -> c_int:
         return self.process.get_song_tpl(self.number)
 
     get_song_tpl.__doc__ = dll.get_song_tpl.__doc__
 
-    def get_song_length_frames(self):
+    def get_song_length_frames(self) -> c_uint32:
         return self.process.get_song_length_frames(self.number)
 
     get_song_length_frames.__doc__ = dll.get_song_length_frames.__doc__
 
-    def get_song_length_lines(self):
+    def get_song_length_lines(self) -> c_uint32:
         return self.process.get_song_length_lines(self.number)
 
     get_song_length_lines.__doc__ = dll.get_song_length_lines.__doc__
 
     def get_time_map(
         self, start_line: c_int, len: c_int, dest: POINTER(c_uint32), flags: c_int
-    ):
+    ) -> c_int:
         return self.process.get_time_map(self.number, start_line, len, dest, flags)
 
     get_time_map.__doc__ = dll.get_time_map.__doc__
 
-    def new_module(self, module_type, name, x, y, z):
+    def new_module(
+        self, module_type: c_char_p, name: c_char_p, x: c_int, y: c_int, z: c_int
+    ) -> c_int:
         with self.locked():
             return self.process.new_module(self.number, module_type, name, x, y, z)
 
     new_module.__doc__ = dll.new_module.__doc__
 
-    def remove_module(self, mod_num):
+    def remove_module(self, mod_num: c_int) -> c_int:
         with self.locked():
             return self.process.remove_module(self.number, mod_num)
 
     remove_module.__doc__ = dll.remove_module.__doc__
 
-    def connect_module(self, source, destination):
+    def connect_module(self, source: c_int, destination: c_int) -> c_int:
         with self.locked():
             return self.process.connect_module(self.number, source, destination)
 
     connect_module.__doc__ = dll.connect_module.__doc__
 
-    def disconnect_module(self, source, destination):
+    def disconnect_module(self, source: c_int, destination: c_int) -> c_int:
         with self.locked():
             return self.process.disconnect_module(self.number, source, destination)
 
     disconnect_module.__doc__ = dll.disconnect_module.__doc__
 
-    def load_module(self, file_name, x=512, y=512, z=512):
+    def load_module(
+        self, file_or_name: FileOrName, x: c_int = 512, y: c_int = 512, z: c_int = 512
+    ) -> c_int:
         value = None
-        if isinstance(file_name, BytesIO):
-            value = file_name.getvalue()
-        elif hasattr(file_name, "mtype"):
+        if isinstance(file_or_name, BytesIO):
+            value = file_or_name.getvalue()
+        elif hasattr(file_or_name, "mtype"):
+            # Radiant Voices object: serialize into bytes and load from memory.
             import rv.api
 
-            value = rv.api.Synth(file_name).read()
-        elif hasattr(file_name, "read"):
-            value = file_name.read()
+            value = rv.api.Synth(file_or_name).read()
+        elif hasattr(file_or_name, "read"):
+            value = file_or_name.read()
         if value is not None:
             return self.process.load_module_from_memory(
                 self.number, value, len(value), x, y, z
@@ -245,21 +260,25 @@ class Slot(object):
 
     load_module.__doc__ = dll.load_module.__doc__
 
-    def sampler_load(self, sampler_module, file_name, sample_slot):
+    def sampler_load(
+        self, sampler_module: c_int, file_name: c_char_p, sample_slot: c_int
+    ) -> c_int:
         return self.process.sampler_load(
             self.number, sampler_module, file_name, sample_slot
         )
 
     sampler_load.__doc__ = dll.sampler_load.__doc__
 
-    def sampler_load_from_memory(self, sampler_module, data, sample_slot):
+    def sampler_load_from_memory(
+        self, sampler_module: c_int, data: bytes, sample_slot: c_int
+    ) -> c_int:
         return self.process.sampler_load_from_memory(
             self.number, sampler_module, data, len(data), sample_slot
         )
 
     sampler_load_from_memory.__doc__ = dll.sampler_load_from_memory.__doc__
 
-    def get_number_of_modules(self):
+    def get_number_of_modules(self) -> c_int:
         return self.process.get_number_of_modules(self.number)
 
     get_number_of_modules.__doc__ = dll.get_number_of_modules.__doc__
@@ -269,32 +288,32 @@ class Slot(object):
 
     find_module.__doc__ = dll.find_module.__doc__
 
-    def get_module_flags(self, mod_num):
+    def get_module_flags(self, mod_num: c_int) -> c_uint32:
         return self.process.get_module_flags(self.number, mod_num)
 
     get_module_flags.__doc__ = dll.get_module_flags.__doc__
 
-    def get_module_inputs(self, mod_num):
+    def get_module_inputs(self, mod_num: c_int) -> c_int:
         return self.process.get_module_inputs(self.number, mod_num)
 
     get_module_inputs.__doc__ = dll.get_module_inputs.__doc__
 
-    def get_module_outputs(self, mod_num):
+    def get_module_outputs(self, mod_num: c_int) -> c_int:
         return self.process.get_module_outputs(self.number, mod_num)
 
     get_module_outputs.__doc__ = dll.get_module_outputs.__doc__
 
-    def get_module_name(self, mod_num):
+    def get_module_name(self, mod_num: c_int) -> c_char_p:
         return self.process.get_module_name(self.number, mod_num)
 
     get_module_name.__doc__ = dll.get_module_name.__doc__
 
-    def get_module_xy(self, mod_num):
+    def get_module_xy(self, mod_num: c_int) -> c_uint32:
         return self.process.get_module_xy(self.number, mod_num)
 
     get_module_xy.__doc__ = dll.get_module_xy.__doc__
 
-    def get_module_color(self, mod_num):
+    def get_module_color(self, mod_num: c_int) -> c_int:
         return self.process.get_module_color(self.number, mod_num)
 
     get_module_color.__doc__ = dll.get_module_color.__doc__
@@ -304,9 +323,15 @@ class Slot(object):
 
     get_module_finetune.__doc__ = dll.get_module_finetune.__doc__
 
-    def get_module_scope2(self, mod_num, channel, read_buf, samples_to_read):
+    def get_module_scope2(
+        self,
+        mod_num: c_int,
+        channel: c_int,
+        dest_buf: POINTER(c_int16),
+        samples_to_read: c_uint32,
+    ) -> c_uint32:
         return self.process.get_module_scope2(
-            self.number, mod_num, channel, read_buf, samples_to_read
+            self.number, mod_num, channel, dest_buf, samples_to_read
         )
 
     get_module_scope2.__doc__ = dll.get_module_scope2.__doc__
@@ -323,22 +348,24 @@ class Slot(object):
 
     module_curve.__doc__ = dll.module_curve.__doc__
 
-    def get_number_of_module_ctls(self, mod_num):
+    def get_number_of_module_ctls(self, mod_num: c_int) -> c_int:
         return self.process.get_number_of_module_ctls(self.number, mod_num)
 
     get_number_of_module_ctls.__doc__ = dll.get_number_of_module_ctls.__doc__
 
-    def get_module_ctl_name(self, mod_num, ctl_num):
+    def get_module_ctl_name(self, mod_num: c_int, ctl_num: c_int) -> c_char_p:
         return self.process.get_module_ctl_name(self.number, mod_num, ctl_num)
 
     get_module_ctl_name.__doc__ = dll.get_module_ctl_name.__doc__
 
-    def get_module_ctl_value(self, mod_num, ctl_num, scaled):
+    def get_module_ctl_value(
+        self, mod_num: c_int, ctl_num: c_int, scaled: c_int
+    ) -> c_int:
         return self.process.get_module_ctl_value(self.number, mod_num, ctl_num, scaled)
 
     get_module_ctl_value.__doc__ = dll.get_module_ctl_value.__doc__
 
-    def get_number_of_patterns(self):
+    def get_number_of_patterns(self) -> c_int:
         return self.process.get_number_of_patterns(self.number)
 
     get_number_of_patterns.__doc__ = dll.get_number_of_patterns.__doc__
@@ -348,22 +375,22 @@ class Slot(object):
 
     find_pattern.__doc__ = dll.find_pattern.__doc__
 
-    def get_pattern_x(self, pat_num):
+    def get_pattern_x(self, pat_num: c_int) -> c_int:
         return self.process.get_pattern_x(self.number, pat_num)
 
     get_pattern_x.__doc__ = dll.get_pattern_x.__doc__
 
-    def get_pattern_y(self, pat_num):
+    def get_pattern_y(self, pat_num: c_int) -> c_int:
         return self.process.get_pattern_y(self.number, pat_num)
 
     get_pattern_y.__doc__ = dll.get_pattern_y.__doc__
 
-    def get_pattern_tracks(self, pat_num):
+    def get_pattern_tracks(self, pat_num: c_int) -> c_int:
         return self.process.get_pattern_tracks(self.number, pat_num)
 
     get_pattern_tracks.__doc__ = dll.get_pattern_tracks.__doc__
 
-    def get_pattern_lines(self, pat_num):
+    def get_pattern_lines(self, pat_num: c_int) -> c_int:
         return self.process.get_pattern_lines(self.number, pat_num)
 
     get_pattern_lines.__doc__ = dll.get_pattern_lines.__doc__
@@ -373,12 +400,12 @@ class Slot(object):
 
     get_pattern_name.__doc__ = dll.get_pattern_name.__doc__
 
-    def get_pattern_data(self, pat_num):
+    def get_pattern_data(self, pat_num: c_int) -> POINTER(sunvox_note):
         return self.process.get_pattern_data(self.number, pat_num)
 
     get_pattern_data.__doc__ = dll.get_pattern_data.__doc__
 
-    def pattern_mute(self, pat_num, mute):
+    def pattern_mute(self, pat_num: c_int, mute: c_int) -> c_int:
         with self.locked():
             return self.process.pattern_mute(self.number, pat_num, mute)
 
