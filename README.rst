@@ -55,7 +55,7 @@ in the ``sunvox.h`` header file.
 Requirements
 ------------
 
-- Python 3.5
+- Python 3.7+
 
 - One of these supported operating systems:
 
