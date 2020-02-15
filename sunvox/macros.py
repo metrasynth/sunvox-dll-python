@@ -28,3 +28,11 @@ def PITCH_TO_FREQUENCY(in_pitch: int) -> float:
 
 def FREQUENCY_TO_PITCH(in_freq: float) -> int:
     return int(30720 - log2(in_freq / 16.3339) * 3072)
+
+
+__all__ = [
+    "GET_MODULE_XY",
+    "GET_MODULE_FINETUNE",
+    "PITCH_TO_FREQUENCY",
+    "FREQUENCY_TO_PITCH",
+]
