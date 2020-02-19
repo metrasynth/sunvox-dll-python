@@ -1,5 +1,10 @@
-from ctypes import Structure, c_ubyte, c_ushort
+from ctypes import Structure, c_ubyte, c_ushort, POINTER, c_uint32, c_int16, c_float
 from enum import IntEnum
+
+
+c_float_p = POINTER(c_float)
+c_int16_p = POINTER(c_int16)
+c_uint32_p = POINTER(c_uint32)
 
 
 class NOTECMD(IntEnum):
@@ -199,4 +204,16 @@ class sunvox_note(Structure):
     ]
 
 
-__all__ = ["NOTECMD", "INIT_FLAG", "MODULE", "sunvox_note"]
+sunvox_note_p = POINTER(sunvox_note)
+
+
+__all__ = [
+    "NOTECMD",
+    "INIT_FLAG",
+    "MODULE",
+    "sunvox_note",
+    "sunvox_note_p",
+    "c_float_p",
+    "c_int16_p",
+    "c_uint32_p",
+]
