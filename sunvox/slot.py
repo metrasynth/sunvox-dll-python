@@ -2,6 +2,7 @@ import sys
 from collections import defaultdict
 from contextlib import contextmanager
 from io import BytesIO
+from pathlib import Path
 from typing import Union, BinaryIO, Optional
 
 from . import dll
@@ -11,7 +12,7 @@ FILENAME_ENCODING = sys.getfilesystemencoding()
 MAX_SLOTS = 4
 DEFAULT_ALLOCATION_MAP = [False] * MAX_SLOTS
 
-FileOrName = Union[str, bytes, BinaryIO]
+FileOrName = Union[str, Path, bytes, BinaryIO]
 
 
 class NoSlotsAvailable(Exception):
@@ -85,7 +86,7 @@ class Slot(object):
 
     def load(self, file_or_name: FileOrName) -> int:
         """Load SunVox project using a filename or file-like object."""
-        if isinstance(file_or_name, (str, bytes)):
+        if isinstance(file_or_name, (str, bytes, Path)):
             return self.load_filename(file_or_name)
         elif callable(getattr(file_or_name, "read", None)):
             return self.load_file(file_or_name)
@@ -98,10 +99,10 @@ class Slot(object):
             value = file.read()
         return self.process.load_from_memory(self.number, value, len(value))
 
-    def load_filename(self, filename: Union[str, bytes]) -> int:
+    def load_filename(self, filename: Union[str, bytes, Path]) -> int:
         """Load SunVox project using a filename."""
-        if isinstance(filename, str):
-            filename = filename.encode("utf8")
+        if isinstance(filename, (str, Path)):
+            filename = str(filename).encode("utf8")
         return self.process.load(self.number, filename)
 
     def play(self) -> int:
