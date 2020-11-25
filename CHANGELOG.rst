@@ -2,10 +2,10 @@ Changelog
 =========
 
 
-0.3.0.1.9.5.1 (not released)
+0.3.0.1.9.6.1 (not released)
 ----------------------------
 
-- Update SunVox DLL to 1.9.5c (1.9.5.1).
+- Update SunVox DLL to 1.9.6b (1.9.6.1).
 
 - Update minimum version of Python supported to 3.7.
 
