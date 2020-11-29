@@ -93,10 +93,7 @@ class Slot(object):
 
     def load_file(self, file: BinaryIO) -> int:
         """Load SunVox project from a file-like object."""
-        if isinstance(file, BytesIO):
-            value = file.getvalue()
-        else:
-            value = file.read()
+        value = file.getvalue() if isinstance(file, BytesIO) else file.read()
         return self.process.load_from_memory(self.number, value, len(value))
 
     def load_filename(self, filename: Union[str, bytes, Path]) -> int:
@@ -151,7 +148,13 @@ class Slot(object):
     set_event_t.__doc__ = dll.set_event_t.__doc__
 
     def send_event(
-        self, track_num: int, note: int, vel: int, module: int, ctl: int, ctl_val: int,
+        self,
+        track_num: int,
+        note: int,
+        vel: int,
+        module: int,
+        ctl: int,
+        ctl_val: int,
     ) -> int:
         module_index = getattr(module, "index", None)
         if module_index is not None:
@@ -204,13 +207,24 @@ class Slot(object):
     get_song_length_lines.__doc__ = dll.get_song_length_lines.__doc__
 
     def get_time_map(
-        self, start_line: int, len: int, dest: c_uint32_p, flags: int
+        self,
+        start_line: int,
+        len: int,
+        dest: c_uint32_p,
+        flags: int,
     ) -> int:
         return self.process.get_time_map(self.number, start_line, len, dest, flags)
 
     get_time_map.__doc__ = dll.get_time_map.__doc__
 
-    def new_module(self, module_type: str, name: str, x: int, y: int, z: int) -> int:
+    def new_module(
+        self,
+        module_type: str,
+        name: str,
+        x: int,
+        y: int,
+        z: int,
+    ) -> int:
         with self.locked():
             return self.process.new_module(
                 self.number, module_type.encode("utf8"), name.encode("utf8"), x, y, z
@@ -237,7 +251,11 @@ class Slot(object):
     disconnect_module.__doc__ = dll.disconnect_module.__doc__
 
     def load_module(
-        self, file_or_name: FileOrName, x: int = 512, y: int = 512, z: int = 512
+        self,
+        file_or_name: FileOrName,
+        x: int = 512,
+        y: int = 512,
+        z: int = 512,
     ) -> int:
         value = None
         if isinstance(file_or_name, BytesIO):
@@ -251,13 +269,21 @@ class Slot(object):
             value = file_or_name.read()
         if value is not None:
             return self.process.load_module_from_memory(
-                self.number, value, len(value), x, y, z
+                slot=self.number,
+                data=value,
+                data_size=len(value),
+                x=x,
+                y=y,
+                z=z,
             )
 
     load_module.__doc__ = dll.load_module.__doc__
 
     def sampler_load(
-        self, sampler_module: int, file_name: str, sample_slot: int
+        self,
+        sampler_module: int,
+        file_name: str,
+        sample_slot: int,
     ) -> int:
         return self.process.sampler_load(
             self.number,
@@ -269,7 +295,10 @@ class Slot(object):
     sampler_load.__doc__ = dll.sampler_load.__doc__
 
     def sampler_load_from_memory(
-        self, sampler_module: int, data: bytes, sample_slot: int
+        self,
+        sampler_module: int,
+        data: bytes,
+        sample_slot: int,
     ) -> int:
         return self.process.sampler_load_from_memory(
             self.number, sampler_module, data, len(data), sample_slot
@@ -324,7 +353,11 @@ class Slot(object):
     get_module_finetune.__doc__ = dll.get_module_finetune.__doc__
 
     def get_module_scope2(
-        self, mod_num: int, channel: int, dest_buf: c_int16_p, samples_to_read: int,
+        self,
+        mod_num: int,
+        channel: int,
+        dest_buf: c_int16_p,
+        samples_to_read: int,
     ) -> int:
         return self.process.get_module_scope2(
             self.number, mod_num, channel, dest_buf, samples_to_read
@@ -333,7 +366,12 @@ class Slot(object):
     get_module_scope2.__doc__ = dll.get_module_scope2.__doc__
 
     def module_curve(
-        self, mod_num: int, curve_num: int, data: c_float_p, len: int, w: int,
+        self,
+        mod_num: int,
+        curve_num: int,
+        data: c_float_p,
+        len: int,
+        w: int,
     ) -> int:
         return self.module_curve(self.number, mod_num, curve_num, data, len, w)
 
