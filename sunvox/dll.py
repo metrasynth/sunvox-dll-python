@@ -69,7 +69,12 @@ _s = loader.LoadLibrary(_sunvox_lib_path)
 GenericFunction = Callable[..., Any]
 
 
-def sunvox_fn(c_fn, arg_ctypes=None, return_ctype=None, needs_lock=False):
+def sunvox_fn(
+    c_fn,
+    arg_ctypes=None,
+    return_ctype=None,
+    needs_lock=False,
+):
     """
     Decorate a ctypes function based on a function declaration's type annotations.
 
@@ -102,8 +107,22 @@ def sunvox_fn(c_fn, arg_ctypes=None, return_ctype=None, needs_lock=False):
     return decorator
 
 
-@sunvox_fn(_s.sv_init, [c_char_p, c_int, c_int, c_uint32], c_int)
-def init(config: Optional[bytes], freq: int, channels: int, flags: int) -> int:
+@sunvox_fn(
+    _s.sv_init,
+    [
+        c_char_p,
+        c_int,
+        c_int,
+        c_uint32,
+    ],
+    c_int,
+)
+def init(
+    config: Optional[bytes],
+    freq: int,
+    channels: int,
+    flags: int,
+) -> int:
     """
     global sound system init
 
@@ -121,21 +140,33 @@ def init(config: Optional[bytes], freq: int, channels: int, flags: int) -> int:
     """
 
 
-@sunvox_fn(_s.sv_deinit, [], c_int)
+@sunvox_fn(
+    _s.sv_deinit,
+    [],
+    c_int,
+)
 def deinit() -> int:
     """
     global sound system deinit
     """
 
 
-@sunvox_fn(_s.sv_update_input, [], c_int)
+@sunvox_fn(
+    _s.sv_update_input,
+    [],
+    c_int,
+)
 def get_sample_rate() -> int:
     """
     Get current sampling rate (it may differ from the frequency specified in sv_init())
     """
 
 
-@sunvox_fn(_s.sv_update_input, [], c_int)
+@sunvox_fn(
+    _s.sv_update_input,
+    [],
+    c_int,
+)
 def update_input() -> int:
     """
     handle input ON/OFF requests to enable/disable input ports of the sound card
@@ -145,8 +176,22 @@ def update_input() -> int:
     """
 
 
-@sunvox_fn(_s.sv_audio_callback, [c_void_p, c_int, c_int, c_uint32], c_int)
-def audio_callback(buf: bytes, frames: int, latency: int, out_time: int) -> int:
+@sunvox_fn(
+    _s.sv_audio_callback,
+    [
+        c_void_p,
+        c_int,
+        c_int,
+        c_uint32,
+    ],
+    c_int,
+)
+def audio_callback(
+    buf: bytes,
+    frames: int,
+    latency: int,
+    out_time: int,
+) -> int:
     """
     get the next piece of SunVox audio from the Output module.
 
@@ -189,7 +234,15 @@ def audio_callback(buf: bytes, frames: int, latency: int, out_time: int) -> int:
 
 @sunvox_fn(
     _s.sv_audio_callback2,
-    [c_void_p, c_int, c_int, c_uint32, c_int, c_int, c_void_p],
+    [
+        c_void_p,
+        c_int,
+        c_int,
+        c_uint32,
+        c_int,
+        c_int,
+        c_void_p,
+    ],
     c_int,
 )
 def audio_callback2(
@@ -220,7 +273,13 @@ def audio_callback2(
     """
 
 
-@sunvox_fn(_s.sv_open_slot, [c_int], c_int)
+@sunvox_fn(
+    _s.sv_open_slot,
+    [
+        c_int,
+    ],
+    c_int,
+)
 def open_slot(slot: int) -> int:
     """
     open sound slot for SunVox.
@@ -238,8 +297,16 @@ def open_slot(slot: int) -> int:
     """
 
 
-@sunvox_fn(_s.sv_close_slot, [c_int], c_int)
-def close_slot(slot: int) -> int:
+@sunvox_fn(
+    _s.sv_close_slot,
+    [
+        c_int,
+    ],
+    c_int,
+)
+def close_slot(
+    slot: int,
+) -> int:
     """
     close sound slot for SunVox.
 
@@ -256,8 +323,16 @@ def close_slot(slot: int) -> int:
     """
 
 
-@sunvox_fn(_s.sv_lock_slot, [c_int], c_int)
-def lock_slot(slot: int) -> int:
+@sunvox_fn(
+    _s.sv_lock_slot,
+    [
+        c_int,
+    ],
+    c_int,
+)
+def lock_slot(
+    slot: int,
+) -> int:
     """
     lock sound slot for SunVox.
 
@@ -274,8 +349,16 @@ def lock_slot(slot: int) -> int:
     """
 
 
-@sunvox_fn(_s.sv_unlock_slot, [c_int], c_int)
-def unlock_slot(slot: int) -> int:
+@sunvox_fn(
+    _s.sv_unlock_slot,
+    [
+        c_int,
+    ],
+    c_int,
+)
+def unlock_slot(
+    slot: int,
+) -> int:
     """
     unlock sound slot for SunVox.
 
@@ -292,44 +375,100 @@ def unlock_slot(slot: int) -> int:
     """
 
 
-@sunvox_fn(_s.sv_load, [c_int, c_char_p], c_int)
-def load(slot: int, name: bytes) -> int:
+@sunvox_fn(
+    _s.sv_load,
+    [
+        c_int,
+        c_char_p,
+    ],
+    c_int,
+)
+def load(
+    slot: int,
+    name: bytes,
+) -> int:
     """
     load SunVox project from the file.
     """
 
 
-@sunvox_fn(_s.sv_load_from_memory, [c_int, c_void_p, c_uint32], c_int)
-def load_from_memory(slot: int, data: bytes, data_size: int) -> int:
+@sunvox_fn(
+    _s.sv_load_from_memory,
+    [
+        c_int,
+        c_void_p,
+        c_uint32,
+    ],
+    c_int,
+)
+def load_from_memory(
+    slot: int,
+    data: bytes,
+    data_size: int,
+) -> int:
     """
     load SunVox project from the memory block.
     """
 
 
-@sunvox_fn(_s.sv_play, [c_int], c_int)
-def play(slot: int) -> int:
+@sunvox_fn(
+    _s.sv_play,
+    [
+        c_int,
+    ],
+    c_int,
+)
+def play(
+    slot: int,
+) -> int:
     """
     play from the current position
     """
 
 
-@sunvox_fn(_s.sv_play_from_beginning, [c_int], c_int)
-def play_from_beginning(slot: int) -> int:
+@sunvox_fn(
+    _s.sv_play_from_beginning,
+    [
+        c_int,
+    ],
+    c_int,
+)
+def play_from_beginning(
+    slot: int,
+) -> int:
     """
     play from the beginning (line 0)
     """
 
 
-@sunvox_fn(_s.sv_stop, [c_int], c_int)
-def stop(slot: int) -> int:
+@sunvox_fn(
+    _s.sv_stop,
+    [
+        c_int,
+    ],
+    c_int,
+)
+def stop(
+    slot: int,
+) -> int:
     """
     first call - stop playing;
     second call - reset all SunVox activity and switch the engine to standby mode.
     """
 
 
-@sunvox_fn(_s.sv_set_autostop, [c_int, c_int], c_int)
-def set_autostop(slot: int, autostop: int) -> int:
+@sunvox_fn(
+    _s.sv_set_autostop,
+    [
+        c_int,
+        c_int,
+    ],
+    c_int,
+)
+def set_autostop(
+    slot: int,
+    autostop: int,
+) -> int:
     """
     autostop values:
       0 - disable autostop;
@@ -339,8 +478,16 @@ def set_autostop(slot: int, autostop: int) -> int:
     """
 
 
-@sunvox_fn(_s.sv_get_autostop, [c_int], c_int)
-def get_autostop(slot: int) -> int:
+@sunvox_fn(
+    _s.sv_get_autostop,
+    [
+        c_int,
+    ],
+    c_int,
+)
+def get_autostop(
+    slot: int,
+) -> int:
     """
     autostop values:
       0 - disable autostop;
@@ -350,8 +497,16 @@ def get_autostop(slot: int) -> int:
     """
 
 
-@sunvox_fn(_s.sv_end_of_song, [c_int], c_int)
-def end_of_song(slot: int) -> int:
+@sunvox_fn(
+    _s.sv_end_of_song,
+    [
+        c_int,
+    ],
+    c_int,
+)
+def end_of_song(
+    slot: int,
+) -> int:
     """
     return values:
       0 - song is playing now;
@@ -359,13 +514,33 @@ def end_of_song(slot: int) -> int:
     """
 
 
-@sunvox_fn(_s.sv_rewind, [c_int, c_int], c_int)
-def rewind(slot: int, line_num: int) -> int:
+@sunvox_fn(
+    _s.sv_rewind,
+    [
+        c_int,
+        c_int,
+    ],
+    c_int,
+)
+def rewind(
+    slot: int,
+    line_num: int,
+) -> int:
     pass
 
 
-@sunvox_fn(_s.sv_volume, [c_int, c_int], c_int)
-def volume(slot: int, vol: int) -> int:
+@sunvox_fn(
+    _s.sv_volume,
+    [
+        c_int,
+        c_int,
+    ],
+    c_int,
+)
+def volume(
+    slot: int,
+    vol: int,
+) -> int:
     """
     set volume from 0 (min) to 256 (max 100%);
 
@@ -375,8 +550,20 @@ def volume(slot: int, vol: int) -> int:
     """
 
 
-@sunvox_fn(_s.sv_set_event_t, [c_int, c_int, c_int], c_int)
-def set_event_t(slot: int, set: int, t: int) -> int:
+@sunvox_fn(
+    _s.sv_set_event_t,
+    [
+        c_int,
+        c_int,
+        c_int,
+    ],
+    c_int,
+)
+def set_event_t(
+    slot: int,
+    set: int,
+    t: int,
+) -> int:
     """
     set the time of events to be sent by sv_send_event()
 
@@ -395,9 +582,27 @@ def set_event_t(slot: int, set: int, t: int) -> int:
     """
 
 
-@sunvox_fn(_s.sv_send_event, [c_int, c_int, c_int, c_int, c_int, c_int, c_int], c_int)
+@sunvox_fn(
+    _s.sv_send_event,
+    [
+        c_int,
+        c_int,
+        c_int,
+        c_int,
+        c_int,
+        c_int,
+        c_int,
+    ],
+    c_int,
+)
 def send_event(
-    slot: int, track_num: int, note: int, vel: int, module: int, ctl: int, ctl_val: int,
+    slot: int,
+    track_num: int,
+    note: int,
+    vel: int,
+    module: int,
+    ctl: int,
+    ctl_val: int,
 ) -> int:
     """
     send an event (note ON, note OFF, controller change, etc.)
@@ -417,14 +622,26 @@ def send_event(
     """
 
 
-@sunvox_fn(_s.sv_get_current_line, [c_int], c_int)
+@sunvox_fn(
+    _s.sv_get_current_line,
+    [
+        c_int,
+    ],
+    c_int,
+)
 def get_current_line(slot: int) -> int:
     """
     Get current line number
     """
 
 
-@sunvox_fn(_s.sv_get_current_line2, [c_int], c_int)
+@sunvox_fn(
+    _s.sv_get_current_line2,
+    [
+        c_int,
+    ],
+    c_int,
+)
 def get_current_line2(slot: int) -> int:
     """
     Get current line number in fixed point format 27.5
@@ -438,22 +655,42 @@ def get_current_signal_level(slot: int, channel: int) -> int:
     """
 
 
-@sunvox_fn(_s.sv_get_song_name, [c_int], c_char_p)
+@sunvox_fn(
+    _s.sv_get_song_name,
+    [c_int],
+    c_char_p,
+)
 def get_song_name(slot: int) -> bytes:
     pass
 
 
-@sunvox_fn(_s.sv_get_song_bpm, [c_int], c_int)
+@sunvox_fn(
+    _s.sv_get_song_bpm,
+    [
+        c_int,
+    ],
+    c_int,
+)
 def get_song_bpm(slot: int) -> int:
     pass
 
 
-@sunvox_fn(_s.sv_get_song_tpl, [c_int], c_int)
+@sunvox_fn(
+    _s.sv_get_song_tpl,
+    [
+        c_int,
+    ],
+    c_int,
+)
 def get_song_tpl(slot: int) -> int:
     pass
 
 
-@sunvox_fn(_s.sv_get_song_length_frames, [c_int], c_uint32)
+@sunvox_fn(
+    _s.sv_get_song_length_frames,
+    [c_int],
+    c_uint32,
+)
 def get_song_length_frames(slot: int) -> int:
     """
     Get the project length in frames.
@@ -463,16 +700,34 @@ def get_song_length_frames(slot: int) -> int:
     """
 
 
-@sunvox_fn(_s.sv_get_song_length_lines, [c_int], c_uint32)
+@sunvox_fn(
+    _s.sv_get_song_length_lines,
+    [c_int],
+    c_uint32,
+)
 def get_song_length_lines(slot: int) -> int:
     """
     Get the project length in lines.
     """
 
 
-@sunvox_fn(_s.sv_get_time_map, [c_int, c_int, c_int, c_uint32_p, c_int], c_int)
+@sunvox_fn(
+    _s.sv_get_time_map,
+    [
+        c_int,
+        c_int,
+        c_int,
+        c_uint32_p,
+        c_int,
+    ],
+    c_int,
+)
 def get_time_map(
-    slot: int, start_line: int, len: int, dest: c_uint32_p, flags: int
+    slot: int,
+    start_line: int,
+    len: int,
+    dest: c_uint32_p,
+    flags: int,
 ) -> int:
     """
     Parameters:
@@ -493,39 +748,106 @@ def get_time_map(
 
 @sunvox_fn(
     _s.sv_new_module,
-    [c_int, c_char_p, c_char_p, c_int, c_int, c_int],
+    [
+        c_int,
+        c_char_p,
+        c_char_p,
+        c_int,
+        c_int,
+        c_int,
+    ],
     c_int,
     needs_lock=True,
 )
-def new_module(slot: int, type: bytes, name: bytes, x: int, y: int, z: int) -> int:
+def new_module(
+    slot: int,
+    type: bytes,
+    name: bytes,
+    x: int,
+    y: int,
+    z: int,
+) -> int:
     """
     Create a new module.
     """
 
 
-@sunvox_fn(_s.sv_remove_module, [c_int, c_int], c_int, needs_lock=True)
-def remove_module(slot: int, mod_num: int) -> int:
+@sunvox_fn(
+    _s.sv_remove_module,
+    [
+        c_int,
+        c_int,
+    ],
+    c_int,
+    needs_lock=True,
+)
+def remove_module(
+    slot: int,
+    mod_num: int,
+) -> int:
     """
     Remove selected module.
     """
 
 
-@sunvox_fn(_s.sv_connect_module, [c_int, c_int, c_int], c_int, needs_lock=True)
-def connect_module(slot: int, source: int, destination: int) -> int:
+@sunvox_fn(
+    _s.sv_connect_module,
+    [
+        c_int,
+        c_int,
+        c_int,
+    ],
+    c_int,
+    needs_lock=True,
+)
+def connect_module(
+    slot: int,
+    source: int,
+    destination: int,
+) -> int:
     """
     Connect the source to the destination.
     """
 
 
-@sunvox_fn(_s.sv_disconnect_module, [c_int, c_int, c_int], c_int, needs_lock=True)
-def disconnect_module(slot: int, source: int, destination: int) -> int:
+@sunvox_fn(
+    _s.sv_disconnect_module,
+    [
+        c_int,
+        c_int,
+        c_int,
+    ],
+    c_int,
+    needs_lock=True,
+)
+def disconnect_module(
+    slot: int,
+    source: int,
+    destination: int,
+) -> int:
     """
     Disconnect the source from the destination.
     """
 
 
-@sunvox_fn(_s.sv_load_module, [c_int, c_char_p, c_int, c_int, c_int], c_int)
-def load_module(slot: int, file_name: bytes, x: int, y: int, z: int) -> int:
+@sunvox_fn(
+    _s.sv_load_module,
+    [
+        c_int,
+        c_char_p,
+        c_int,
+        c_int,
+        c_int,
+    ],
+    c_int,
+)
+def load_module(
+    slot: int,
+    file_name: bytes,
+    x: int,
+    y: int,
+    z: int,
+) -> int:
     """
     load a module or sample;
 
@@ -537,20 +859,44 @@ def load_module(slot: int, file_name: bytes, x: int, y: int, z: int) -> int:
 
 @sunvox_fn(
     _s.sv_load_module_from_memory,
-    [c_int, c_void_p, c_uint32_p, c_int, c_int, c_int],
+    [
+        c_int,
+        c_void_p,
+        c_uint32_p,
+        c_int,
+        c_int,
+        c_int,
+    ],
     c_int,
 )
 def load_module_from_memory(
-    slot: int, data: bytes, data_size: int, x: int, y: int, z: int
+    slot: int,
+    data: bytes,
+    data_size: int,
+    x: int,
+    y: int,
+    z: int,
 ) -> int:
     """
     load a module or sample from the memory block
     """
 
 
-@sunvox_fn(_s.sv_sampler_load, [c_int, c_int, c_char_p, c_int], c_int)
+@sunvox_fn(
+    _s.sv_sampler_load,
+    [
+        c_int,
+        c_int,
+        c_char_p,
+        c_int,
+    ],
+    c_int,
+)
 def sampler_load(
-    slot: int, sampler_module: int, file_name: bytes, sample_slot: int
+    slot: int,
+    sampler_module: int,
+    file_name: bytes,
+    sample_slot: int,
 ) -> int:
     """
     load a sample to already created Sampler;
@@ -559,10 +905,22 @@ def sampler_load(
 
 
 @sunvox_fn(
-    _s.sv_sampler_load_from_memory, [c_int, c_int, c_void_p, c_uint32, c_int], c_int
+    _s.sv_sampler_load_from_memory,
+    [
+        c_int,
+        c_int,
+        c_void_p,
+        c_uint32,
+        c_int,
+    ],
+    c_int,
 )
 def sampler_load_from_memory(
-    slot: int, sampler_module: int, data: bytes, data_size: int, sample_slot: int,
+    slot: int,
+    sampler_module: int,
+    data: bytes,
+    data_size: int,
+    sample_slot: int,
 ) -> int:
     """
     load a sample to already created Sampler;
@@ -570,13 +928,29 @@ def sampler_load_from_memory(
     """
 
 
-@sunvox_fn(_s.sv_get_number_of_modules, [c_int], c_int)
+@sunvox_fn(
+    _s.sv_get_number_of_modules,
+    [
+        c_int,
+    ],
+    c_int,
+)
 def get_number_of_modules(slot: int) -> int:
     pass
 
 
-@sunvox_fn(_s.sv_find_module, [c_int, c_char_p], c_int)
-def find_module(slot: int, name: bytes) -> int:
+@sunvox_fn(
+    _s.sv_find_module,
+    [
+        c_int,
+        c_char_p,
+    ],
+    c_int,
+)
+def find_module(
+    slot: int,
+    name: bytes,
+) -> int:
     """
     find a module by name;
 
@@ -584,36 +958,86 @@ def find_module(slot: int, name: bytes) -> int:
     """
 
 
-@sunvox_fn(_s.sv_get_module_flags, [c_int, c_int], c_uint32)
-def get_module_flags(slot: int, mod_num: int) -> int:
+@sunvox_fn(
+    _s.sv_get_module_flags,
+    [
+        c_int,
+        c_int,
+    ],
+    c_uint32,
+)
+def get_module_flags(
+    slot: int,
+    mod_num: int,
+) -> int:
     """
     sunvox.types.MODULE.FLAG_xxx
     """
 
 
-@sunvox_fn(_s.sv_get_module_inputs, [c_int, c_int], c_int)
-def get_module_inputs(slot: int, mod_num: int) -> int:
+@sunvox_fn(
+    _s.sv_get_module_inputs,
+    [
+        c_int,
+        c_int,
+    ],
+    c_int,
+)
+def get_module_inputs(
+    slot: int,
+    mod_num: int,
+) -> int:
     """
     get pointers to the int[] arrays with the input links.
     Number of inputs = ( module_flags & MODULE.INPUTS_MASK ) >> MODULE.INPUTS_OFF
     """
 
 
-@sunvox_fn(_s.sv_get_module_outputs, [c_int, c_int], c_int)
-def get_module_outputs(slot: int, mod_num: int) -> int:
+@sunvox_fn(
+    _s.sv_get_module_outputs,
+    [
+        c_int,
+        c_int,
+    ],
+    c_int,
+)
+def get_module_outputs(
+    slot: int,
+    mod_num: int,
+) -> int:
     """
     get pointers to the int[] arrays with the output links.
     Number of outputs = ( module_flags & MODULE.OUTPUTS_MASK ) >> MODULE.OUTPUTS_OFF
     """
 
 
-@sunvox_fn(_s.sv_get_module_name, [c_int, c_int], c_char_p)
-def get_module_name(slot: int, mod_num: int) -> bytes:
+@sunvox_fn(
+    _s.sv_get_module_name,
+    [
+        c_int,
+        c_int,
+    ],
+    c_char_p,
+)
+def get_module_name(
+    slot: int,
+    mod_num: int,
+) -> bytes:
     pass
 
 
-@sunvox_fn(_s.sv_get_module_xy, [c_int, c_int], c_uint32)
-def get_module_xy(slot: int, mod_num: int) -> int:
+@sunvox_fn(
+    _s.sv_get_module_xy,
+    [
+        c_int,
+        c_int,
+    ],
+    c_uint32,
+)
+def get_module_xy(
+    slot: int,
+    mod_num: int,
+) -> int:
     """
     get module XY coordinates packed in a single uint32 value:
 
@@ -626,15 +1050,35 @@ def get_module_xy(slot: int, mod_num: int) -> int:
     """
 
 
-@sunvox_fn(_s.sv_get_module_color, [c_int, c_int], c_int)
-def get_module_color(slot: int, mod_num: int) -> int:
+@sunvox_fn(
+    _s.sv_get_module_color,
+    [
+        c_int,
+        c_int,
+    ],
+    c_int,
+)
+def get_module_color(
+    slot: int,
+    mod_num: int,
+) -> int:
     """
     get module color in the following format: 0xBBGGRR
     """
 
 
-@sunvox_fn(_s.sv_get_module_finetune, [c_int, c_int], c_uint32)
-def get_module_finetune(slot: int, mod_num: int) -> int:
+@sunvox_fn(
+    _s.sv_get_module_finetune,
+    [
+        c_int,
+        c_int,
+    ],
+    c_uint32,
+)
+def get_module_finetune(
+    slot: int,
+    mod_num: int,
+) -> int:
     """
     get the relative note and finetune of the module;
 
@@ -645,10 +1089,22 @@ def get_module_finetune(slot: int, mod_num: int) -> int:
 
 
 @sunvox_fn(
-    _s.sv_get_module_scope2, [c_int, c_int, c_int, c_int16_p, c_uint32], c_uint32
+    _s.sv_get_module_scope2,
+    [
+        c_int,
+        c_int,
+        c_int,
+        c_int16_p,
+        c_uint32,
+    ],
+    c_uint32,
 )
 def get_module_scope2(
-    slot: int, mod_num: int, channel: int, dest_buf: c_int16_p, samples_to_read: int,
+    slot: int,
+    mod_num: int,
+    channel: int,
+    dest_buf: c_int16_p,
+    samples_to_read: int,
 ) -> int:
     """
     return value = received number of samples (may be less or equal to samples_to_read).
@@ -663,9 +1119,25 @@ def get_module_scope2(
     """
 
 
-@sunvox_fn(_s.sv_module_curve, [c_int, c_int, c_int, c_float_p, c_int, c_int], c_int)
+@sunvox_fn(
+    _s.sv_module_curve,
+    [
+        c_int,
+        c_int,
+        c_int,
+        c_float_p,
+        c_int,
+        c_int,
+    ],
+    c_int,
+)
 def module_curve(
-    slot: int, mod_num: int, curve_num: int, data: c_float_p, len: int, w: int,
+    slot: int,
+    mod_num: int,
+    curve_num: int,
+    data: c_float_p,
+    len: int,
+    w: int,
 ) -> int:
     """
     access to the curve values of the specified module
@@ -693,28 +1165,82 @@ def module_curve(
     """
 
 
-@sunvox_fn(_s.sv_get_number_of_module_ctls, [c_int, c_int], c_int)
-def get_number_of_module_ctls(slot: int, mod_num: int) -> int:
+@sunvox_fn(
+    _s.sv_get_number_of_module_ctls,
+    [
+        c_int,
+        c_int,
+    ],
+    c_int,
+)
+def get_number_of_module_ctls(
+    slot: int,
+    mod_num: int,
+) -> int:
     pass
 
 
-@sunvox_fn(_s.sv_get_module_ctl_name, [c_int, c_int, c_int], c_char_p)
-def get_module_ctl_name(slot: int, mod_num: int, ctl_num: int) -> bytes:
+@sunvox_fn(
+    _s.sv_get_module_ctl_name,
+    [
+        c_int,
+        c_int,
+        c_int,
+    ],
+    c_char_p,
+)
+def get_module_ctl_name(
+    slot: int,
+    mod_num: int,
+    ctl_num: int,
+) -> bytes:
     pass
 
 
-@sunvox_fn(_s.sv_get_module_ctl_value, [c_int, c_int, c_int, c_int], c_int)
-def get_module_ctl_value(slot: int, mod_num: int, ctl_num: int, scaled: int) -> int:
+@sunvox_fn(
+    _s.sv_get_module_ctl_value,
+    [
+        c_int,
+        c_int,
+        c_int,
+        c_int,
+    ],
+    c_int,
+)
+def get_module_ctl_value(
+    slot: int,
+    mod_num: int,
+    ctl_num: int,
+    scaled: int,
+) -> int:
     pass
 
 
-@sunvox_fn(_s.sv_get_number_of_patterns, [c_int], c_int)
-def get_number_of_patterns(slot: int) -> int:
+@sunvox_fn(
+    _s.sv_get_number_of_patterns,
+    [
+        c_int,
+    ],
+    c_int,
+)
+def get_number_of_patterns(
+    slot: int,
+) -> int:
     pass
 
 
-@sunvox_fn(_s.sv_find_pattern, [c_int, c_char_p], c_int)
-def find_pattern(slot: int, name: bytes) -> int:
+@sunvox_fn(
+    _s.sv_find_pattern,
+    [
+        c_int,
+        c_char_p,
+    ],
+    c_int,
+)
+def find_pattern(
+    slot: int,
+    name: bytes,
+) -> int:
     """
     find a pattern by name;
 
@@ -722,8 +1248,18 @@ def find_pattern(slot: int, name: bytes) -> int:
     """
 
 
-@sunvox_fn(_s.sv_get_pattern_x, [c_int, c_int], c_int)
-def get_pattern_x(slot: int, pat_num: int) -> int:
+@sunvox_fn(
+    _s.sv_get_pattern_x,
+    [
+        c_int,
+        c_int,
+    ],
+    c_int,
+)
+def get_pattern_x(
+    slot: int,
+    pat_num: int,
+) -> int:
     """
     get pattern information
 
@@ -731,8 +1267,18 @@ def get_pattern_x(slot: int, pat_num: int) -> int:
     """
 
 
-@sunvox_fn(_s.sv_get_pattern_y, [c_int, c_int], c_int)
-def get_pattern_y(slot: int, pat_num: int) -> int:
+@sunvox_fn(
+    _s.sv_get_pattern_y,
+    [
+        c_int,
+        c_int,
+    ],
+    c_int,
+)
+def get_pattern_y(
+    slot: int,
+    pat_num: int,
+) -> int:
     """
     get pattern information
 
@@ -740,8 +1286,18 @@ def get_pattern_y(slot: int, pat_num: int) -> int:
     """
 
 
-@sunvox_fn(_s.sv_get_pattern_tracks, [c_int, c_int], c_int)
-def get_pattern_tracks(slot: int, pat_num: int) -> int:
+@sunvox_fn(
+    _s.sv_get_pattern_tracks,
+    [
+        c_int,
+        c_int,
+    ],
+    c_int,
+)
+def get_pattern_tracks(
+    slot: int,
+    pat_num: int,
+) -> int:
     """
     get pattern information
 
@@ -749,8 +1305,18 @@ def get_pattern_tracks(slot: int, pat_num: int) -> int:
     """
 
 
-@sunvox_fn(_s.sv_get_pattern_lines, [c_int, c_int], c_int)
-def get_pattern_lines(slot: int, pat_num: int) -> int:
+@sunvox_fn(
+    _s.sv_get_pattern_lines,
+    [
+        c_int,
+        c_int,
+    ],
+    c_int,
+)
+def get_pattern_lines(
+    slot: int,
+    pat_num: int,
+) -> int:
     """
     get pattern information
 
@@ -758,8 +1324,18 @@ def get_pattern_lines(slot: int, pat_num: int) -> int:
     """
 
 
-@sunvox_fn(_s.sv_get_pattern_name, [c_int, c_int], c_char_p)
-def get_pattern_name(slot: int, pat_num: int) -> bytes:
+@sunvox_fn(
+    _s.sv_get_pattern_name,
+    [
+        c_int,
+        c_int,
+    ],
+    c_char_p,
+)
+def get_pattern_name(
+    slot: int,
+    pat_num: int,
+) -> bytes:
     """
     get pattern information
 
@@ -767,8 +1343,18 @@ def get_pattern_name(slot: int, pat_num: int) -> bytes:
     """
 
 
-@sunvox_fn(_s.sv_get_pattern_data, [c_int, c_int], sunvox_note_p)
-def get_pattern_data(slot: int, pat_num: int) -> sunvox_note_p:
+@sunvox_fn(
+    _s.sv_get_pattern_data,
+    [
+        c_int,
+        c_int,
+    ],
+    sunvox_note_p,
+)
+def get_pattern_data(
+    slot: int,
+    pat_num: int,
+) -> sunvox_note_p:
     """
     get the pattern buffer (for reading and writing)
 
@@ -787,8 +1373,20 @@ def get_pattern_data(slot: int, pat_num: int) -> sunvox_note_p:
     """
 
 
-@sunvox_fn(_s.sv_pattern_mute, [c_int, c_int, c_int], c_int)
-def pattern_mute(slot: int, pat_num: int, mute: int) -> int:
+@sunvox_fn(
+    _s.sv_pattern_mute,
+    [
+        c_int,
+        c_int,
+        c_int,
+    ],
+    c_int,
+)
+def pattern_mute(
+    slot: int,
+    pat_num: int,
+    mute: int,
+) -> int:
     """
     mute (1) / unmute (0) specified pattern;
 
@@ -798,7 +1396,11 @@ def pattern_mute(slot: int, pat_num: int, mute: int) -> int:
     """
 
 
-@sunvox_fn(_s.sv_get_ticks, [], c_uint32)
+@sunvox_fn(
+    _s.sv_get_ticks,
+    [],
+    c_uint32,
+)
 def get_ticks() -> int:
     """
     SunVox engine uses its own time space, measured in system ticks (don't confuse it
@@ -810,7 +1412,11 @@ def get_ticks() -> int:
     """
 
 
-@sunvox_fn(_s.sv_get_ticks_per_second, [], c_uint32)
+@sunvox_fn(
+    _s.sv_get_ticks_per_second,
+    [],
+    c_uint32,
+)
 def get_ticks_per_second() -> int:
     """
     SunVox engine uses its own time space, measured in system ticks (don't confuse it
@@ -822,8 +1428,16 @@ def get_ticks_per_second() -> int:
     """
 
 
-@sunvox_fn(_s.sv_get_log, [c_int], c_char_p)
-def get_log(size: int) -> bytes:
+@sunvox_fn(
+    _s.sv_get_log,
+    [
+        c_int,
+    ],
+    c_char_p,
+)
+def get_log(
+    size: int,
+) -> bytes:
     """
     get the latest messages from the log
 
