@@ -5,6 +5,12 @@ from sunvox.api import INIT_FLAG, Process
 from .processor import BufferedProcessor
 
 
+DATA_TYPE_FLAGS = {
+    int16: INIT_FLAG.AUDIO_INT16,
+    float32: INIT_FLAG.AUDIO_FLOAT32,
+}
+
+
 class BufferedProcess(Process):
 
     freq = 44100
@@ -20,10 +26,11 @@ class BufferedProcess(Process):
         self.channels = channels
         self.data_type = data_type
         self.size = size
-        flags = INIT_FLAG.USER_AUDIO_CALLBACK | INIT_FLAG.ONE_THREAD
-        flags |= {int16: INIT_FLAG.AUDIO_INT16, float32: INIT_FLAG.AUDIO_FLOAT32}[
-            self.data_type
-        ]
+        flags = (
+            INIT_FLAG.USER_AUDIO_CALLBACK
+            | INIT_FLAG.ONE_THREAD
+            | DATA_TYPE_FLAGS[self.data_type]
+        )
         self.init(None, self.freq, self.channels, flags)
         self.init_buffer()
 
