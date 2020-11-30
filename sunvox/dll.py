@@ -85,20 +85,14 @@ def sunvox_fn(
     def decorator(fn: GenericFunction) -> GenericFunction:
         spec = inspect.getfullargspec(fn)
         annotations = spec.annotations
-        if arg_ctypes:
-            ctypes = arg_ctypes
-        else:
-            ctypes = [annotations[arg] for arg in spec.args]
+        ctypes = arg_ctypes or [annotations[arg] for arg in spec.args]
         arg_sig = ", ".join(
             f"{arg}: {ctype}" for (arg, ctype) in zip(spec.args, ctypes)
         )
         signature = f"{fn.__name__}({arg_sig})"
         doc = dedent(fn.__doc__ or "").strip()
         c_fn.argtypes = arg_ctypes
-        if return_ctype:
-            c_fn.restype = return_ctype
-        else:
-            c_fn.restype = annotations["return"]
+        c_fn.restype = return_ctype or annotations["return"]
         c_fn.needs_lock = needs_lock
         c_fn.sunvox_dll_fn = True
         c_fn.__doc__ = f"{signature}\n\n{doc}"
