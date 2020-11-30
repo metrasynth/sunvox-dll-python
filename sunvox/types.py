@@ -1,5 +1,10 @@
-from ctypes import Structure, c_ubyte, c_ushort
+from ctypes import Structure, c_ubyte, c_ushort, POINTER, c_uint32, c_int16, c_float
 from enum import IntEnum
+
+
+c_float_p = POINTER(c_float)
+c_int16_p = POINTER(c_int16)
+c_uint32_p = POINTER(c_uint32)
 
 
 class NOTECMD(IntEnum):
@@ -127,60 +132,88 @@ class NOTECMD(IntEnum):
     ) = range(1, 121)
     EMPTY = 0
     NOTE_OFF = 128
-    ALL_NOTES_OFF = 129  # notes of all synths off
-    CLEAN_SYNTHS = 130  # stop and clean all synths
+    ALL_NOTES_OFF = 129  # send "note off" to all modules
+    CLEAN_SYNTHS = (
+        130  # put all modules into standby state (stop and clear all internal buffers)
+    )
     STOP = 131
     PLAY = 132
-    SET_PITCH = 133
-    PREV_TRACK = 134
+    SET_PITCH = 133  # set pitch ctl_val
 
 
-class SV_INIT_FLAG(IntEnum):
+class INIT_FLAG(IntEnum):
+    """Flags for init()"""
 
     NO_DEBUG_OUTPUT = 1 << 0
 
-    # Interaction with sound card is on the user side
+    # Offline mode:
+    # system-dependent audio stream will not be created;
+    # user calls audio_callback() to get the next piece of sound stream
     USER_AUDIO_CALLBACK = 1 << 1
 
+    # Same as USER_AUDIO_CALLBACK
+    OFFLINE = 1 << 1
+
+    # Desired sample type of the output sound stream : int16_t
     AUDIO_INT16 = 1 << 2
 
+    # Desired sample type of the output sound stream : float
+    # The actual sample type may be different, if INIT_FLAG.USER_AUDIO_CALLBACK is not set
     AUDIO_FLOAT32 = 1 << 3
 
     # Audio callback and song modification functions are in single thread
+    # Use it with INIT_FLAG.USER_AUDIO_CALLBACK only
     ONE_THREAD = 1 << 4
 
 
-class SV_MODULE(IntEnum):
-    FLAG_EXISTS = 1
-    FLAG_EFFECT = 2
+class TIME_MAP(IntEnum):
+    """Flags for get_time_map()"""
+
+    SPEED = 0
+    FRAMECNT = 1
+    TYPE_MASK = 3
+
+
+class MODULE(IntEnum):
+    """Flags for get_module_flags()"""
+
+    FLAG_EXISTS = 1 << 0
+    FLAG_EFFECT = 1 << 1
+    FLAG_MUTE = 1 << 2
+    FLAG_SOLO = 1 << 3
+    FLAG_BYPASS = 1 << 4
     INPUTS_OFF = 16
     INPUTS_MASK = 255 << INPUTS_OFF
     OUTPUTS_OFF = 16 + 8
     OUTPUTS_MASK = 255 << OUTPUTS_OFF
 
 
-class SV_STYPE(IntEnum):
-    INT16 = 0
-    INT32 = 1
-    FLOAT32 = 2
-    FLOAT64 = 3
-
-
 class sunvox_note(Structure):
     _fields_ = [
-        # 0 - nothing; 1..127 - note num; 128 - note off; 129, 130...
-        # - see NOTECMD_xxx defines
+        # NN: 0 - nothing; 1..127 - note num; 128 - note off; 129, 130...
+        # - see NOTECMD enum
         ("note", c_ubyte),
-        # Velocity 1..129; 0 - default
+        # VV: Velocity 1..129; 0 - default
         ("vel", c_ubyte),
-        # 0 - nothing; 1..255 - module number (real module number + 1)
-        ("module", c_ubyte),
-        ("nothing", c_ubyte),
-        # CCEE. CC - number of a controller (1..255). EE - std effect
+        # MM: 0 - nothing; 1..65535 - module number + 1
+        ("module", c_ushort),
+        # 0xCCEE: CC: 1..127 - controller number + 1; EE - effect
         ("ctl", c_ushort),
-        # XXYY. Value of controller/effect
+        # 0xXXYY: value of controller or effect
         ("ctl_val", c_ushort),
     ]
 
 
-__all__ = ["NOTECMD", "SV_INIT_FLAG", "SV_MODULE", "SV_STYPE", "sunvox_note"]
+sunvox_note_p = POINTER(sunvox_note)
+
+
+__all__ = [
+    "NOTECMD",
+    "INIT_FLAG",
+    "MODULE",
+    "sunvox_note",
+    "sunvox_note_p",
+    "c_float_p",
+    "c_int16_p",
+    "c_uint32_p",
+]
