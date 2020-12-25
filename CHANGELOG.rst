@@ -2,6 +2,12 @@ Changelog
 =========
 
 
+0.3.1.1.9.6.1
+-------------
+
+- Increases maximum number of slots to 16.
+
+
 0.3.0.1.9.6.1
 -------------
 

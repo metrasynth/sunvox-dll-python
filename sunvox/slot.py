@@ -9,7 +9,7 @@ from . import dll
 from .types import c_uint32_p, c_int16_p, c_float_p, sunvox_note_p
 
 FILENAME_ENCODING = sys.getfilesystemencoding()
-MAX_SLOTS = 4
+MAX_SLOTS = 16
 DEFAULT_ALLOCATION_MAP = [False] * MAX_SLOTS
 
 FileOrName = Union[str, Path, bytes, BinaryIO]
