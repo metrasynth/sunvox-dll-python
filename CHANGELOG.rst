@@ -5,6 +5,8 @@ Changelog
 0.3.1.1.9.6.1
 -------------
 
+- Updates SunVox DLL to 1.9.6c (still 1.9.6.1 internally).
+
 - Increases maximum number of slots to 16.
 
 
