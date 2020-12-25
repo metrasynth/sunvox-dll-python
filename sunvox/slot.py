@@ -117,6 +117,16 @@ class Slot(object):
 
     stop.__doc__ = dll.stop.__doc__
 
+    def pause(self) -> int:
+        return self.process.pause(self.number)
+
+    pause.__doc__ = dll.pause.__doc__
+
+    def resume(self) -> int:
+        return self.process.resume(self.number)
+
+    resume.__doc__ = dll.resume.__doc__
+
     def set_autostop(self, autostop: int) -> int:
         return self.process.set_autostop(self.number, autostop)
 

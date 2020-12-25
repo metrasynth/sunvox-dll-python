@@ -452,6 +452,52 @@ def stop(
 
 
 @sunvox_fn(
+    _s.sv_pause,
+    [
+        c_int,
+    ],
+    c_int,
+)
+def pause(
+    slot: int,
+) -> int:
+    """
+    (no official docs)
+    """
+
+
+@sunvox_fn(
+    _s.sv_resume,
+    [
+        c_int,
+    ],
+    c_int,
+)
+def resume(
+    slot: int,
+) -> int:
+    """
+    (no official docs)
+    """
+
+
+@sunvox_fn(
+    _s.sv_stop,
+    [
+        c_int,
+    ],
+    c_int,
+)
+def stop(
+    slot: int,
+) -> int:
+    """
+    first call - stop playing;
+    second call - reset all SunVox activity and switch the engine to standby mode.
+    """
+
+
+@sunvox_fn(
     _s.sv_set_autostop,
     [
         c_int,
@@ -1461,6 +1507,8 @@ __all__ = [
     "play",
     "play_from_beginning",
     "stop",
+    "pause",
+    "resume",
     "set_autostop",
     "get_autostop",
     "end_of_song",

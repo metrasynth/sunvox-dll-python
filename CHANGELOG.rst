@@ -9,6 +9,8 @@ Changelog
 
 - Increases maximum number of slots to 16.
 
+- Adds new library functions and slot methods ``pause`` and ``resume``.
+
 
 0.3.0.1.9.6.1
 -------------
