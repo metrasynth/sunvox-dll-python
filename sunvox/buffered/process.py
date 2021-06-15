@@ -1,3 +1,5 @@
+from typing import Optional, Union
+
 import numpy
 from numpy import float32, int16, zeros
 from sunvox.api import INIT_FLAG, Process
@@ -72,8 +74,10 @@ class BufferedProcess(Process):
         self._send("init_buffer", self.size)
         return self._recv()
 
-    def fill_buffer(self):
-        self._send("fill_buffer")
+    def fill_buffer(self, input_buffer: Optional[Union[bytes, numpy.ndarray]] = None):
+        if isinstance(input_buffer, numpy.ndarray):
+            input_buffer = input_buffer.tobytes()
+        self._send("fill_buffer", input_buffer)
         raw = self._recv()
         if isinstance(raw, bytes):
             buffer = numpy.fromstring(raw, self.type_code)

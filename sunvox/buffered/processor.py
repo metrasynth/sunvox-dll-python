@@ -1,4 +1,5 @@
 import ctypes
+from typing import Optional
 
 import sunvox.dll
 import sunvox.types
@@ -23,8 +24,23 @@ class BufferedProcessor(Processor):
         self._buffer_bytes = self.type_size * self.channels * size
         self._buffer = ctypes.create_string_buffer(self._buffer_bytes)
 
-    def fill_buffer(self):
-        sunvox.dll.audio_callback(
-            ctypes.byref(self._buffer), self._buffer_size, 0, sunvox.dll.get_ticks()
-        )
+    def fill_buffer(self, input_buffer: Optional[bytes] = None):
+        if input_buffer is None:
+            sunvox.dll.audio_callback(
+                ctypes.byref(self._buffer),
+                self._buffer_size,
+                0,
+                sunvox.dll.get_ticks(),
+            )
+        else:
+            cbuffer = ctypes.create_string_buffer(input_buffer)
+            sunvox.dll.audio_callback2(
+                ctypes.byref(self._buffer),
+                self._buffer_size,
+                0,
+                sunvox.dll.get_ticks(),
+                1,
+                2,
+                ctypes.byref(cbuffer),
+            )
         return self._buffer.raw
