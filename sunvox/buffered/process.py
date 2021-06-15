@@ -20,7 +20,14 @@ class BufferedProcess(Process):
 
     processor_class = BufferedProcessor
 
-    def __init__(self, freq=freq, channels=channels, data_type=data_type, size=size):
+    def __init__(
+        self,
+        freq=freq,
+        channels=channels,
+        data_type=data_type,
+        size=size,
+        extra_flags=0,
+    ):
         super(BufferedProcess, self).__init__()
         self.freq = freq
         self.channels = channels
@@ -30,6 +37,7 @@ class BufferedProcess(Process):
             INIT_FLAG.USER_AUDIO_CALLBACK
             | INIT_FLAG.ONE_THREAD
             | DATA_TYPE_FLAGS[self.data_type]
+            | extra_flags
         )
         self.init(None, self.freq, self.channels, flags)
         self.init_buffer()
