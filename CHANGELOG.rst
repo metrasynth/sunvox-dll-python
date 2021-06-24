@@ -15,6 +15,8 @@ Changelog
 
 - Allows passing an input buffer to ``fill_buffer``.
 
+- Fixes loading DLL using Python 3.9 on Windows.
+
 
 0.3.0.1.9.6.1
 -------------
