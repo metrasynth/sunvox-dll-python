@@ -12,6 +12,7 @@ Naming conventions:
 -   Function names do not contain a `sv_` prefix:
     `sv_init` becomes `init`
 """
+
 import inspect
 import os
 import sys
@@ -49,13 +50,12 @@ elif DLL_BASE is not None:
         _lib_path = os.path.join(DEFAULT_DLL_BASE, "windows", _bit_path)
         os.environ["PATH"] = _lib_path + ";" + os.environ["PATH"]
         _sunvox_lib_path = f"{_lib_path}\\{rel_path}.dll"
+    elif rel_path is not None:
+        _sunvox_lib_path = os.path.join(DLL_BASE, rel_path)
     else:
-        if rel_path is not None:
-            _sunvox_lib_path = os.path.join(DLL_BASE, rel_path)
-        else:
-            raise NotImplementedError(
-                "SunVox DLL could not be found for your platform."
-            )
+        raise NotImplementedError(
+            "SunVox DLL could not be found for your platform."
+        )
 else:
     _sunvox_lib_path = find_library("sunvox")
 
