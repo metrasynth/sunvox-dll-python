@@ -48,7 +48,7 @@ elif DLL_BASE is not None:
         _bit_path = "lib_x86_64" if is64bit else "lib_x86"
         _lib_path = os.path.join(DEFAULT_DLL_BASE, "windows", _bit_path)
         os.environ["PATH"] = _lib_path + ";" + os.environ["PATH"]
-        _sunvox_lib_path = rel_path
+        _sunvox_lib_path = f"{_lib_path}\\{rel_path}.dll"
     else:
         if rel_path is not None:
             _sunvox_lib_path = os.path.join(DLL_BASE, rel_path)
@@ -432,6 +432,52 @@ def play_from_beginning(
 ) -> int:
     """
     play from the beginning (line 0)
+    """
+
+
+@sunvox_fn(
+    _s.sv_stop,
+    [
+        c_int,
+    ],
+    c_int,
+)
+def stop(
+    slot: int,
+) -> int:
+    """
+    first call - stop playing;
+    second call - reset all SunVox activity and switch the engine to standby mode.
+    """
+
+
+@sunvox_fn(
+    _s.sv_pause,
+    [
+        c_int,
+    ],
+    c_int,
+)
+def pause(
+    slot: int,
+) -> int:
+    """
+    (no official docs)
+    """
+
+
+@sunvox_fn(
+    _s.sv_resume,
+    [
+        c_int,
+    ],
+    c_int,
+)
+def resume(
+    slot: int,
+) -> int:
+    """
+    (no official docs)
     """
 
 
@@ -1461,6 +1507,8 @@ __all__ = [
     "play",
     "play_from_beginning",
     "stop",
+    "pause",
+    "resume",
     "set_autostop",
     "get_autostop",
     "end_of_song",

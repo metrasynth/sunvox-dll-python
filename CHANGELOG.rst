@@ -2,6 +2,22 @@ Changelog
 =========
 
 
+0.3.1.1.9.6.1
+-------------
+
+- Updates SunVox DLL to 1.9.6c (still 1.9.6.1 internally).
+
+- Increases maximum number of slots to 16.
+
+- Adds new library functions and slot methods ``pause`` and ``resume``.
+
+- Allows passing extra initialization flags in to a ``BufferedProcess``.
+
+- Allows passing an input buffer to ``fill_buffer``.
+
+- Fixes loading DLL using Python 3.9 on Windows.
+
+
 0.3.0.1.9.6.1
 -------------
 

@@ -1,0 +1,37 @@
+name: python-tests
+on:
+  - push
+jobs:
+  test:
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8, 3.9]
+        poetry-version: [1.1.6]
+        os: [ubuntu-20.04, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install poetry ${{ matrix.poetry-version }}
+        uses: abatilo/actions-poetry@v2.0.0
+        with:
+          poetry-version: ${{ matrix.poetry-version }}
+
+      - name: Install apt dependencies
+        if: ${{ matrix.os == 'ubuntu-20.04' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install libsdl1.2-dev libsdl2-dev
+
+      - name: Install dependencies
+        run: |
+          poetry install -E docs -E tools
+
+      - name: Test with pytest
+        run: |
+          poetry run pytest
