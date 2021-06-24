@@ -10,7 +10,7 @@ After new releases of SunVox library
 ====================================
 
 1.  Copy libraries from the SunVox library distribution, e.g.:
-    ``cd sunvox/lib; ./copy-libs.sh ../../../sunvox_dll``
+    ``cd sunvox/lib; ./copy-libs.sh ../../../sunvox_lib``
 
 2.  Change ``sunvox/dll.py`` to add, change, or remove any functions,
     based on changes in ``sunvox.h`` in the SunVox library itself.
@@ -35,24 +35,35 @@ After new releases of SunVox library
 Prep for PyPI and test
 ======================
 
-1.  ``rm -v dist/*; python setup.py sdist bdist_wheel``.
+::
 
-2.  Create a new virtualenv: ``virtualenv tmp; cd tmp``.
-
-3.  ``bin/pip install ../dist/sunvox_dll_python-….whl`` (use actual filename).
-
-4.  ``bin/pip install numpy scipy tqdm``
-
-5.  ``bin/python -m sunvox.tools.export …``
-
-6.  ``cd ..; rm -rf tmp``
+    $ devpi login <username> --password=<password>
+    $ rm -v dist/*
+    $ poetry build
+    $ devpi upload dist/*
+    $ virtualenv testenv
+    $ cd testenv
+    $ . bin/activate
+    $ devpi install sunvox-dll-python
+    $ python
+    >>> import sunvox
+    >>> sunvox.__version__
+    '0.3.1.1.9.6.1'
+    >>> from sunvox.api import init
+    >>> init(None, 44100, 2, 0)
+    67846
+    >>> ^D
+    $ deactivate
+    $ cd ..
+    $ rm -rf testenv
 
 
 Upload to PyPI
 ==============
 
-1.  ``git tag <full-version-number>``
+::
 
-2.  ``git push --tags``
-
-3.  ``twine upload dist/*``
+    $ git tag <full-version-number>
+    $ git push --tags
+    $ twine upload dist/*
+    $ rm -v dist/*
