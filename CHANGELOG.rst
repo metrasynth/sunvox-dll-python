@@ -11,6 +11,10 @@ Changelog
 
 - Adds new library functions and slot methods ``pause`` and ``resume``.
 
+- Allows passing extra initialization flags in to a ``BufferedProcess``.
+
+- Allows passing an input buffer to ``fill_buffer``.
+
 
 0.3.0.1.9.6.1
 -------------
