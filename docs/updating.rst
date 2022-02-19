@@ -48,10 +48,10 @@ Prep for PyPI and test
     $ python
     >>> import sunvox
     >>> sunvox.__version__
-    '0.3.1.1.9.6.1'
+    '0.3.2.2.0.0.0'
     >>> from sunvox.api import init
-    >>> init(None, 44100, 2, 0)
-    67846
+    >>> hex(init(None, 44100, 2, 0))
+    '0x20000'
     >>> ^D
     $ deactivate
     $ cd ..

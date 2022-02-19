@@ -12,6 +12,7 @@ Naming conventions:
 -   Function names do not contain a `sv_` prefix:
     `sv_init` becomes `init`
 """
+
 import inspect
 import os
 import sys
@@ -33,7 +34,7 @@ elif DLL_BASE is not None:
     platform = sys.platform
     if platform == "linux" and os.uname()[-1] in {"armv7l", "aarch64"}:
         platform = "raspberrypi"
-    is64bit = sys.maxsize > 2 ** 32
+    is64bit = sys.maxsize > 2**32
     key = (platform, is64bit)
     rel_path = {
         ("darwin", True): "osx/lib_x86_64/sunvox.dylib",
@@ -47,15 +48,12 @@ elif DLL_BASE is not None:
     if sys.platform == "win32":
         _bit_path = "lib_x86_64" if is64bit else "lib_x86"
         _lib_path = os.path.join(DEFAULT_DLL_BASE, "windows", _bit_path)
-        os.environ["PATH"] = _lib_path + ";" + os.environ["PATH"]
+        os.environ["PATH"] = f'{_lib_path};{os.environ["PATH"]}'
         _sunvox_lib_path = f"{_lib_path}\\{rel_path}.dll"
+    elif rel_path is not None:
+        _sunvox_lib_path = os.path.join(DLL_BASE, rel_path)
     else:
-        if rel_path is not None:
-            _sunvox_lib_path = os.path.join(DLL_BASE, rel_path)
-        else:
-            raise NotImplementedError(
-                "SunVox DLL could not be found for your platform."
-            )
+        raise NotImplementedError("SunVox DLL could not be found for your platform.")
 else:
     _sunvox_lib_path = find_library("sunvox")
 
@@ -406,6 +404,23 @@ def load_from_memory(
 
 
 @sunvox_fn(
+    _s.sv_save,
+    [
+        c_int,
+        c_char_p,
+    ],
+    c_int,
+)
+def save(
+    slot: int,
+    name: bytes,
+) -> int:
+    """
+    save project to the file.
+    """
+
+
+@sunvox_fn(
     _s.sv_play,
     [
         c_int,
@@ -462,7 +477,7 @@ def pause(
     slot: int,
 ) -> int:
     """
-    (no official docs)
+    pause the audio stream on the specified slot
     """
 
 
@@ -477,23 +492,23 @@ def resume(
     slot: int,
 ) -> int:
     """
-    (no official docs)
+    resume the audio stream on the specified slot
     """
 
 
 @sunvox_fn(
-    _s.sv_stop,
+    _s.sv_sync_resume,
     [
         c_int,
     ],
     c_int,
 )
-def stop(
+def sync_resume(
     slot: int,
 ) -> int:
     """
-    first call - stop playing;
-    second call - reset all SunVox activity and switch the engine to standby mode.
+    wait for sync (pattern effect 0x33 on any slot)
+    and resume the audio stream on the specified slot
     """
 
 
@@ -976,7 +991,12 @@ def sampler_load_from_memory(
     c_int,
 )
 def get_number_of_modules(slot: int) -> int:
-    pass
+    """
+    get the number of module slots (not the actual number of modules).
+    The slot can be empty or it can contain a module.
+    Here is the code to determine that the module slot X is not empty:
+    ( sv_get_module_flags( slot, X ) & SV_MODULE_FLAG_EXISTS ) != 0;
+    """
 
 
 @sunvox_fn(
@@ -1029,7 +1049,8 @@ def get_module_inputs(
 ) -> int:
     """
     get pointers to the int[] arrays with the input links.
-    Number of inputs = ( module_flags & MODULE.INPUTS_MASK ) >> MODULE.INPUTS_OFF
+    Number of input links = ( module_flags & MODULE.INPUTS_MASK ) >> MODULE.INPUTS_OFF
+    (this is not the actual number of connections: some links may be empty (value = -1))
     """
 
 
@@ -1047,7 +1068,9 @@ def get_module_outputs(
 ) -> int:
     """
     get pointers to the int[] arrays with the output links.
-    Number of outputs = ( module_flags & MODULE.OUTPUTS_MASK ) >> MODULE.OUTPUTS_OFF
+    Number of output links =
+    ( module_flags & MODULE.OUTPUTS_MASK ) >> MODULE.OUTPUTS_OFF
+    (this is not the actual number of connections: some links may be empty (value = -1))
     """
 
 
@@ -1266,7 +1289,12 @@ def get_module_ctl_value(
 def get_number_of_patterns(
     slot: int,
 ) -> int:
-    pass
+    """
+    get the number of pattern slots (not the actual number of patterns).
+    The slot can be empty or it can contain a pattern.
+    Here is the code to determine that the pattern slot X is not empty:
+    sv_get_pattern_lines( slot, X ) > 0;
+    """
 
 
 @sunvox_fn(
@@ -1410,6 +1438,70 @@ def get_pattern_data(
         //get the buffer with all the pattern events (notes)
       sunvox_note* n = &data[ line_number * pat_tracks + track_number ];
       ... and then do someting with note n ...
+    """
+
+
+@sunvox_fn(
+    _s.sv_set_pattern_event,
+    [
+        c_int,
+        c_int,
+        c_int,
+        c_int,
+        c_int,
+        c_int,
+        c_int,
+        c_int,
+        c_int,
+    ],
+    c_int,
+)
+def set_pattern_event(
+    slot: int,
+    pat_num: int,
+    track: int,
+    line: int,
+    nn: int,
+    vv: int,
+    mm: int,
+    ccee: int,
+    xxyy: int,
+) -> int:
+    """
+    write the pattern event to the cell at the specified line and track
+    nn,vv,mm,ccee,xxyy are the same as the fields of sunvox_note structure.
+    Only non-negative values will be written to the pattern.
+    Return value: 0 (sucess) or negative error code.
+    """
+
+
+@sunvox_fn(
+    _s.sv_get_pattern_event,
+    [
+        c_int,
+        c_int,
+        c_int,
+        c_int,
+        c_int,
+    ],
+    c_int,
+)
+def get_pattern_event(
+    slot: int,
+    pat_num: int,
+    track: int,
+    line: int,
+    column: int,
+) -> int:
+    """
+    read a pattern event at the specified line and track
+    column (field number):
+       0 - note (NN);
+       1 - velocity (VV);
+       2 - module (MM);
+       3 - controller number or effect (CCEE);
+       4 - controller value or effect parameter (XXYY);
+    Return value: value of the specified field or negative error code.
     """
 
 

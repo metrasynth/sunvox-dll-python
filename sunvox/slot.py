@@ -102,6 +102,12 @@ class Slot(object):
             filename = str(filename).encode("utf8")
         return self.process.load(self.number, filename)
 
+    def save_filename(self, filename: Union[str, bytes, Path]) -> int:
+        """Save SunVox project using a filename."""
+        if isinstance(filename, (str, Path)):
+            filename = str(filename).encode("utf8")
+        return self.process.save(self.number, filename)
+
     def play(self) -> int:
         return self.process.play(self.number)
 
@@ -126,6 +132,11 @@ class Slot(object):
         return self.process.resume(self.number)
 
     resume.__doc__ = dll.resume.__doc__
+
+    def sync_resume(self) -> int:
+        return self.process.sync_resume(self.number)
+
+    sync_resume.__doc__ = dll.resume.__doc__
 
     def set_autostop(self, autostop: int) -> int:
         return self.process.set_autostop(self.number, autostop)
@@ -443,6 +454,30 @@ class Slot(object):
         return self.process.get_pattern_data(self.number, pat_num)
 
     get_pattern_data.__doc__ = dll.get_pattern_data.__doc__
+
+    def set_pattern_event(
+        self,
+        pat_num: int,
+        track: int,
+        line: int,
+        nn: int,
+        vv: int,
+        mm: int,
+        ccee: int,
+        xxyy: int,
+    ) -> int:
+        return self.process.set_pattern_event(
+            self.number, track, line, nn, vv, mm, ccee, xxyy
+        )
+
+    set_pattern_event.__doc__ = dll.set_pattern_event.__doc__
+
+    def get_pattern_event(
+        self, pat_num: int, track: int, line: int, column: int
+    ) -> int:
+        return self.process.get_pattern_event(self.number, pat_num, track, line, column)
+
+    get_pattern_event.__doc__ = dll.get_pattern_event.__doc__
 
     def pattern_mute(self, pat_num: int, mute: int) -> int:
         with self.locked():
