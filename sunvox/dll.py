@@ -53,9 +53,7 @@ elif DLL_BASE is not None:
     elif rel_path is not None:
         _sunvox_lib_path = os.path.join(DLL_BASE, rel_path)
     else:
-        raise NotImplementedError(
-            "SunVox DLL could not be found for your platform."
-        )
+        raise NotImplementedError("SunVox DLL could not be found for your platform.")
 else:
     _sunvox_lib_path = find_library("sunvox")
 
