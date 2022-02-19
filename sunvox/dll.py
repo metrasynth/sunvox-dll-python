@@ -48,7 +48,7 @@ elif DLL_BASE is not None:
     if sys.platform == "win32":
         _bit_path = "lib_x86_64" if is64bit else "lib_x86"
         _lib_path = os.path.join(DEFAULT_DLL_BASE, "windows", _bit_path)
-        os.environ["PATH"] = f'{_lib_path};' + os.environ["PATH"]
+        os.environ["PATH"] = f'{_lib_path};{os.environ["PATH"]}'
         _sunvox_lib_path = f"{_lib_path}\\{rel_path}.dll"
     elif rel_path is not None:
         _sunvox_lib_path = os.path.join(DLL_BASE, rel_path)
