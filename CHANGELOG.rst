@@ -2,6 +2,19 @@ Changelog
 =========
 
 
+0.3.2.2.0.0.0
+-------------
+
+- Updates SunVox DLL to 2.0c (2.0.0.0 internally).
+
+- Adds new library functions and slot methods ``save``
+  (``save_filename`` when using within a slot),
+  ``sync_resume``, ``set_pattern_event``, and ``get_pattern_event``.
+
+- Adds new documentation to ``pause``, ``resume``, ``get_number_of_modules``,
+  ``get_module_inputs``, ``get_module_outputs``, and ``get_number_of_patterns``.
+
+
 0.3.1.1.9.6.1
 -------------
 

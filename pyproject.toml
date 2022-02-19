@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sunvox-dll-python"
-version = "0.3.1.1.9.6.1"
+version = "0.3.2.2.0.0.0"
 description = "Python ctypes-based wrapper for the SunVox library"
 authors = ["Matthew Scott <matt@11craft.com>"]
 license = "MIT"
@@ -28,7 +28,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.7,<3.10"
+python = ">=3.7"
 numpy = {version = "^1.21.0", optional = true}
 scipy = {version = "^1.7.0", optional = true}
 tqdm = {version = "^4.61.1", optional = true}
