@@ -28,9 +28,9 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.7"
+python = ">=3.8,<3.11"
 numpy = {version = "^1.21.0", optional = true}
-scipy = {version = "^1.7.0", optional = true}
+scipy = {version = "^1.8.0", optional = true}
 tqdm = {version = "^4.61.1", optional = true}
 plantweb = {version = "^1.2.1", optional = true}
 Sphinx = {version = "^4.0.2", optional = true}
@@ -43,6 +43,7 @@ pytest = "^6.2.4"
 pytest-watch = "^4.2.0"
 
 [tool.poetry.extras]
+buffered = ["numpy"]
 docs = ["plantweb", "Sphinx", "sphinx-rtd-theme", "radiant-voices"]
 tools = ["numpy", "scipy", "tqdm"]
 
