@@ -2,6 +2,14 @@ Changelog
 =========
 
 
+0.3.3.2.0.0.0
+-------------
+
+- Updates SunVox DLL to 2.0e (2.0.0.0 internally).
+
+- Adds support for M1-based Mac systems.
+
+
 0.3.2.2.0.0.0
 -------------
 
