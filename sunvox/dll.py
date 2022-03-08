@@ -34,7 +34,7 @@ def _load_library():
         sunvox_lib_path = DLL_PATH
     elif DLL_BASE is not None:
         platform = sys.platform
-        machine = os.uname().machine
+        machine = os.uname().machine if platform != "win32" else None
         if platform == "darwin" and machine == "arm64":
             platform = "darwin-arm"
         elif platform == "linux" and machine in {"armv7l", "aarch64"}:
@@ -51,7 +51,7 @@ def _load_library():
             ("win32", True): "sunvox",
             ("win32", False): "sunvox",
         }.get(key)
-        if sys.platform == "win32":
+        if platform == "win32":
             machine_path = "lib_x86_64" if is64bit else "lib_x86"
             lib_path = os.path.join(DEFAULT_DLL_BASE, "windows", machine_path)
             os.environ["PATH"] = f'{lib_path};{os.environ["PATH"]}'
