@@ -24,42 +24,26 @@ from typing import Callable, Any, Optional
 from sunvox.types import sunvox_note_p, c_uint32_p, c_int16_p, c_float_p
 
 DEFAULT_DLL_BASE = os.path.abspath(os.path.join(os.path.dirname(__file__), "lib"))
-
 DLL_BASE = os.environ.get("SUNVOX_DLL_BASE", DEFAULT_DLL_BASE)
 DLL_PATH = os.environ.get("SUNVOX_DLL_PATH")
+
+PLATFORM_RELATIVE_PATHS = {
+    ("darwin", True): "macos/lib_x86_64/sunvox.dylib",
+    ("darwin-arm", True): "macos/lib_arm64/sunvox.dylib",
+    ("linux", True): "linux/lib_x86_64/sunvox.so",
+    ("linux", False): "linux/lib_x86/sunvox.so",
+    ("linux-arm", False): "linux/lib_arm_armhf_raspberry_pi/sunvox.so",
+    ("linux-arm", True): "linux/lib_arm64/sunvox.so",
+    ("win32", True): "sunvox",
+    ("win32", False): "sunvox",
+}
 
 
 def _load_library():
     if DLL_PATH is not None:
         sunvox_lib_path = DLL_PATH
     elif DLL_BASE is not None:
-        platform = sys.platform
-        machine = os.uname().machine if platform != "win32" else None
-        if platform == "darwin" and machine == "arm64":
-            platform = "darwin-arm"
-        elif platform == "linux" and machine in {"armv7l", "aarch64"}:
-            platform = "linux-arm"
-        is64bit = sys.maxsize > 2**32
-        key = (platform, is64bit)
-        rel_path = {
-            ("darwin", True): "macos/lib_x86_64/sunvox.dylib",
-            ("darwin-arm", True): "macos/lib_arm64/sunvox.dylib",
-            ("linux", True): "linux/lib_x86_64/sunvox.so",
-            ("linux", False): "linux/lib_x86/sunvox.so",
-            ("linux-arm", False): "linux/lib_arm_armhf_raspberry_pi/sunvox.so",
-            ("linux-arm", True): "linux/lib_arm64/sunvox.so",
-            ("win32", True): "sunvox",
-            ("win32", False): "sunvox",
-        }.get(key)
-        if platform == "win32":
-            machine_path = "lib_x86_64" if is64bit else "lib_x86"
-            lib_path = os.path.join(DEFAULT_DLL_BASE, "windows", machine_path)
-            os.environ["PATH"] = f'{lib_path};{os.environ["PATH"]}'
-            sunvox_lib_path = f"{lib_path}\\{rel_path}.dll"
-        elif rel_path is not None:
-            sunvox_lib_path = os.path.join(DLL_BASE, rel_path)
-        else:
-            raise NotImplementedError("SunVox library not available for your platform.")
+        sunvox_lib_path = _find_sunvox_lib_path_from_dll_base()
     else:
         sunvox_lib_path = find_library("sunvox")
 
@@ -69,6 +53,31 @@ def _load_library():
         from ctypes import cdll as loader
 
     return loader.LoadLibrary(sunvox_lib_path)
+
+
+def _find_sunvox_lib_path_from_dll_base():
+    platform = _platform_with_machine()
+    is64bit = sys.maxsize > 2**32
+    key = (platform, is64bit)
+    rel_path = PLATFORM_RELATIVE_PATHS.get(key)
+    if platform == "win32":
+        machine_path = "lib_x86_64" if is64bit else "lib_x86"
+        lib_path = os.path.join(DEFAULT_DLL_BASE, "windows", machine_path)
+        os.environ["PATH"] = f'{lib_path};{os.environ["PATH"]}'
+        return f"{lib_path}\\{rel_path}.dll"
+    if rel_path is not None:
+        return os.path.join(DLL_BASE, rel_path)
+    raise NotImplementedError("SunVox library not available for your platform.")
+
+
+def _platform_with_machine():
+    platform = sys.platform
+    machine = os.uname().machine if platform != "win32" else None
+    if platform == "darwin" and machine == "arm64":
+        return "darwin-arm"
+    if platform == "linux" and machine in {"armv7l", "aarch64"}:
+        return "linux-arm"
+    return platform
 
 
 _s = _load_library()
