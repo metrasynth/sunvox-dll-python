@@ -68,8 +68,7 @@ def _load_library():
     else:
         from ctypes import cdll as loader
 
-    lib = loader.LoadLibrary(sunvox_lib_path)
-    return lib
+    return loader.LoadLibrary(sunvox_lib_path)
 
 
 _s = _load_library()
