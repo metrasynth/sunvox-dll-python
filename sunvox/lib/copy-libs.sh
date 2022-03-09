@@ -2,7 +2,7 @@
 #
 # Copies libs from the SunVox library distribution.
 
-set -euxo pipefail
+set -euo pipefail
 
 usage() {
     echo "Usage: $0 <sunvox-library-dir>"
@@ -15,10 +15,20 @@ SUNVOX_LIB_DIR="$1"
 
 [[ -d "${SUNVOX_LIB_DIR}" ]] || usage
 
-cp -v "${SUNVOX_LIB_DIR}/linux/lib_arm64/sunvox.so" linux/lib_arm64/
-cp -v "${SUNVOX_LIB_DIR}/linux/lib_arm_armhf_raspberry_pi/sunvox.so" linux/lib_arm_armhf_raspberry_pi/
-cp -v "${SUNVOX_LIB_DIR}/linux/lib_x86/sunvox.so" linux/lib_x86/
-cp -v "${SUNVOX_LIB_DIR}/linux/lib_x86_64/sunvox.so" linux/lib_x86_64/
-cp -v "${SUNVOX_LIB_DIR}/macos/lib_x86_64/sunvox.dylib" osx/lib_x86_64/
-cp -v "${SUNVOX_LIB_DIR}/windows/lib_x86/sunvox.dll" windows/lib_x86/
-cp -v "${SUNVOX_LIB_DIR}/windows/lib_x86_64/sunvox.dll" windows/lib_x86_64/
+SUNVOX_LIB_SUBPATHS="
+linux/lib_arm64/
+linux/lib_arm_armhf_raspberry_pi/
+linux/lib_x86/
+linux/lib_x86_64/
+macos/lib_arm64/
+macos/lib_x86_64/
+windows/lib_x86/
+windows/lib_x86_64/
+"
+
+for REL_SUBPATH in ${SUNVOX_LIB_SUBPATHS}
+do
+    SRC_SUBPATH="${SUNVOX_LIB_DIR}/${REL_SUBPATH}"
+    mkdir -p "${REL_SUBPATH}"
+    cp -v "${SRC_SUBPATH}"sunvox.* "${REL_SUBPATH}"
+done
