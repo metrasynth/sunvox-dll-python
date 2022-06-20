@@ -163,7 +163,7 @@ def deinit() -> int:
 
 
 @sunvox_fn(
-    _s.sv_update_input,
+    _s.sv_get_sample_rate,
     [],
     c_int,
 )

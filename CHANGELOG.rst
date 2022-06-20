@@ -7,6 +7,9 @@ Changelog
 
 - Updates SunVox DLL to 2.1b (2.1.0.0 internally).
 
+- Fixes mapping of ``sunvox.dll.get_sample_rate`` to point to
+  the correct C function.
+
 
 0.3.3.2.0.0.0
 -------------
