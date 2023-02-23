@@ -32,7 +32,7 @@ PLATFORM_RELATIVE_PATHS = {
     ("darwin-arm", True): "macos/lib_arm64/sunvox.dylib",
     ("linux", True): "linux/lib_x86_64/sunvox.so",
     ("linux", False): "linux/lib_x86/sunvox.so",
-    ("linux-arm", False): "linux/lib_arm_armhf_raspberry_pi/sunvox.so",
+    ("linux-arm", False): "linux/lib_arm/sunvox.so",
     ("linux-arm", True): "linux/lib_arm64/sunvox.so",
     ("win32", True): "sunvox",
     ("win32", False): "sunvox",
