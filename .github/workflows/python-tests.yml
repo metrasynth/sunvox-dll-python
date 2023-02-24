@@ -30,7 +30,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          poetry install -E docs -E tools
+          poetry install -E tools --with test --with docs
 
       - name: Test with pytest
         run: |
