@@ -14,7 +14,6 @@ DATA_TYPE_FLAGS = {
 
 
 class BufferedProcess(Process):
-
     freq = 44100
     channels = 2
     data_type = float32

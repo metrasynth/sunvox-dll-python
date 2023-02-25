@@ -207,6 +207,12 @@ class Slot(object):
 
     get_song_name.__doc__ = dll.get_song_name.__doc__
 
+    def set_song_name(self, name: str) -> int:
+        song_name = name.encode("utf8")
+        return self.process.set_song_name(self.number, song_name)
+
+    set_song_name.__doc__ = dll.set_song_name.__doc__
+
     def get_song_bpm(self) -> int:
         return self.process.get_song_bpm(self.number)
 
@@ -302,13 +308,13 @@ class Slot(object):
 
     def sampler_load(
         self,
-        sampler_module: int,
+        mod_num: int,
         file_name: str,
         sample_slot: int,
     ) -> int:
         return self.process.sampler_load(
             self.number,
-            sampler_module,
+            mod_num,
             file_name.encode(FILENAME_ENCODING),
             sample_slot,
         )
@@ -317,15 +323,73 @@ class Slot(object):
 
     def sampler_load_from_memory(
         self,
-        sampler_module: int,
+        mod_num: int,
         data: bytes,
         sample_slot: int,
     ) -> int:
         return self.process.sampler_load_from_memory(
-            self.number, sampler_module, data, len(data), sample_slot
+            self.number,
+            mod_num,
+            data,
+            len(data),
+            sample_slot,
         )
 
     sampler_load_from_memory.__doc__ = dll.sampler_load_from_memory.__doc__
+
+    def metamodule_load(
+        self,
+        mod_num: int,
+        file_name: str,
+    ) -> int:
+        return self.process.metamodule_load(
+            self.number,
+            mod_num,
+            file_name.encode(FILENAME_ENCODING),
+        )
+
+    metamodule_load.__doc__ = dll.metamodule_load.__doc__
+
+    def metamodule_load_from_memory(
+        self,
+        mod_num: int,
+        data: bytes,
+    ) -> int:
+        return self.process.metamodule_load_from_memory(
+            self.number,
+            mod_num,
+            data,
+            len(data),
+        )
+
+    metamodule_load_from_memory.__doc__ = dll.metamodule_load_from_memory.__doc__
+
+    def vplayer_load(
+        self,
+        mod_num: int,
+        file_name: str,
+    ) -> int:
+        return self.process.vplayer_load(
+            self.number,
+            mod_num,
+            file_name.encode(FILENAME_ENCODING),
+        )
+
+    vplayer_load.__doc__ = dll.vplayer_load.__doc__
+
+    def vplayer_load_from_memory(
+        self,
+        mod_num: int,
+        data: bytes,
+    ) -> int:
+        return self.process.vplayer_load_from_memory(
+            self.number,
+            mod_num,
+            data,
+            len(data),
+        )
+
+    vplayer_load_from_memory.__doc__ = dll.vplayer_load_from_memory.__doc__
 
     def get_number_of_modules(self) -> int:
         return self.process.get_number_of_modules(self.number)
@@ -352,26 +416,58 @@ class Slot(object):
 
     get_module_outputs.__doc__ = dll.get_module_outputs.__doc__
 
+    def get_module_type(self, mod_num: int) -> str:
+        module_name = self.process.get_module_type(self.number, mod_num)
+        return module_name.decode("utf8")
+
+    get_module_type.__doc__ = dll.get_module_type.__doc__
+
     def get_module_name(self, mod_num: int) -> Optional[str]:
         module_name = self.process.get_module_name(self.number, mod_num)
         return module_name.decode("utf8") if module_name is not None else None
 
     get_module_name.__doc__ = dll.get_module_name.__doc__
 
+    def set_module_name(self, mod_num: int, name: str) -> int:
+        module_name = name.encode("utf8")
+        return self.process.set_module_name(self.number, mod_num, module_name)
+
+    set_module_name.__doc__ = dll.set_module_name.__doc__
+
     def get_module_xy(self, mod_num: int) -> int:
         return self.process.get_module_xy(self.number, mod_num)
 
     get_module_xy.__doc__ = dll.get_module_xy.__doc__
+
+    def set_module_xy(self, mod_num: int, x: int, y: int) -> int:
+        return self.process.set_module_xy(self.number, mod_num, x, y)
+
+    set_module_xy.__doc__ = dll.set_module_xy.__doc__
 
     def get_module_color(self, mod_num: int) -> int:
         return self.process.get_module_color(self.number, mod_num)
 
     get_module_color.__doc__ = dll.get_module_color.__doc__
 
+    def set_module_color(self, mod_num: int, color: int) -> int:
+        return self.process.set_module_color(self.number, mod_num, color)
+
+    set_module_color.__doc__ = dll.set_module_color.__doc__
+
     def get_module_finetune(self, mod_num: int) -> int:
         return self.process.get_module_finetune(self.number, mod_num)
 
     get_module_finetune.__doc__ = dll.get_module_finetune.__doc__
+
+    def set_module_finetune(self, mod_num: int, finetune: int) -> int:
+        return self.process.set_module_finetune(self.number, mod_num, finetune)
+
+    set_module_finetune.__doc__ = dll.set_module_finetune.__doc__
+
+    def set_module_relnote(self, mod_num: int, relative_note: int) -> int:
+        return self.process.set_module_relnote(self.number, mod_num, relative_note)
+
+    set_module_relnote.__doc__ = dll.set_module_relnote.__doc__
 
     def get_module_scope2(
         self,
@@ -414,6 +510,61 @@ class Slot(object):
 
     get_module_ctl_value.__doc__ = dll.get_module_ctl_value.__doc__
 
+    def set_module_ctl_value(self, mod_num: int, ctl_num: int, val: int, scaled: int):
+        return self.process.set_module_ctl_value(
+            self.number, mod_num, ctl_num, val, scaled
+        )
+
+    set_module_ctl_value.__doc__ = dll.set_module_ctl_value.__doc__
+
+    def get_module_ctl_min(self, mod_num: int, ctl_num: int, scaled: int) -> int:
+        return self.process.get_module_ctl_min(self.number, mod_num, ctl_num, scaled)
+
+    get_module_ctl_min.__doc__ = dll.get_module_ctl_min.__doc__
+
+    def get_module_ctl_max(self, mod_num: int, ctl_num: int, scaled: int) -> int:
+        return self.process.get_module_ctl_max(self.number, mod_num, ctl_num, scaled)
+
+    get_module_ctl_max.__doc__ = dll.get_module_ctl_max.__doc__
+
+    def get_module_ctl_offset(self, mod_num: int, ctl_num: int) -> int:
+        return self.process.get_module_ctl_offset(self.number, mod_num, ctl_num)
+
+    get_module_ctl_offset.__doc__ = dll.get_module_ctl_offset.__doc__
+
+    def get_module_ctl_type(self, mod_num: int, ctl_num: int) -> int:
+        return self.process.get_module_ctl_type(self.number, mod_num, ctl_num)
+
+    get_module_ctl_type.__doc__ = dll.get_module_ctl_type.__doc__
+
+    def get_module_ctl_group(self, mod_num: int, ctl_num: int) -> int:
+        return self.process.get_module_ctl_group(self.number, mod_num, ctl_num)
+
+    get_module_ctl_group.__doc__ = dll.get_module_ctl_group.__doc__
+
+    def new_pattern(
+        self,
+        clone: int,
+        x: int,
+        y: int,
+        tracks: int,
+        lines: int,
+        icon_seed: int,
+        name: str,
+    ) -> int:
+        with self.locked():
+            return self.process.new_pattern(
+                self.number, clone, x, y, tracks, lines, icon_seed, name.encode("utf8")
+            )
+
+    new_pattern.__doc__ = dll.new_pattern.__doc__
+
+    def remove_pattern(self, pat_num: int) -> int:
+        with self.locked():
+            return self.process.remove_pattern(self.number, pat_num)
+
+    remove_pattern.__doc__ = dll.remove_pattern.__doc__
+
     def get_number_of_patterns(self) -> int:
         return self.process.get_number_of_patterns(self.number)
 
@@ -434,6 +585,12 @@ class Slot(object):
 
     get_pattern_y.__doc__ = dll.get_pattern_y.__doc__
 
+    def set_pattern_xy(self, pat_num: int, x: int, y: int) -> int:
+        with self.locked():
+            return self.process.set_pattern_xy(self.number, pat_num, x, y)
+
+    set_pattern_xy.__doc__ = dll.set_pattern_xy.__doc__
+
     def get_pattern_tracks(self, pat_num: int) -> int:
         return self.process.get_pattern_tracks(self.number, pat_num)
 
@@ -444,11 +601,23 @@ class Slot(object):
 
     get_pattern_lines.__doc__ = dll.get_pattern_lines.__doc__
 
+    def set_pattern_size(self, pat_num: int, tracks: int, lines: int) -> int:
+        with self.locked():
+            return self.process.set_pattern_size(self.number, pat_num, tracks, lines)
+
+    set_pattern_size.__doc__ = dll.set_pattern_size.__doc__
+
     def get_pattern_name(self, pat_num: int) -> str:
         pattern_name = self.process.get_pattern_name(self.number, pat_num)
         return pattern_name.decode("utf8") if pattern_name is not None else None
 
     get_pattern_name.__doc__ = dll.get_pattern_name.__doc__
+
+    def set_pattern_name(self, pat_num: int, name: str) -> int:
+        pattern_name = name.encode("utf8")
+        return self.process.set_pattern_name(self.number, pattern_name)
+
+    set_pattern_name.__doc__ = dll.set_pattern_name.__doc__
 
     def get_pattern_data(self, pat_num: int) -> sunvox_note_p:
         return self.process.get_pattern_data(self.number, pat_num)

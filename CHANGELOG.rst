@@ -2,6 +2,33 @@ Changelog
 =========
 
 
+0.3.4.2.1.0.2
+-------------
+
+- Updates SunVox DLL to 2.1b (2.1.0.0 internally).
+
+- Adds new library functions and slot methods ``set_song_name``,
+  ``metamodule_load``, ``metamodule_load_from_memory``, ``vplayer_load``,
+  ``vplayer_load_from_memory``, ``get_module_type``, ``set_module_name``,
+  ``set_module_xy``, ``set_module_color``, ``set_module_finetune``,
+  ``set_module_relnote``, ``set_module_ctl_value``, ``get_module_ctl_min``,
+  ``get_module_ctl_max``, ``get_module_ctl_offset``, ``get_module_ctl_type``,
+  ``get_module_ctl_group``, ``new_pattern``, ``remove_pattern``,
+  ``set_pattern_xy``, ``set_pattern_size``, and ``set_pattern_name``.
+
+- Adds documentation for ``get_module_ctl_value``.
+
+- Updates documentation for ``module_curve``, ``get_pattern_x``,
+  ``get_pattern_y``, ``get_pattern_tracks``, ``get_pattern_lines``,
+  and ``get_pattern_name``.
+
+- Updates constants and docs in ``sunvox.types``
+  based on SunVox DLL 2.1b headers.
+
+- Fixes mapping of ``sunvox.dll.get_sample_rate`` to point to
+  the correct C function.
+
+
 0.3.3.2.0.0.0
 -------------
 

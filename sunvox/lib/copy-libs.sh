@@ -16,8 +16,8 @@ SUNVOX_LIB_DIR="$1"
 [[ -d "${SUNVOX_LIB_DIR}" ]] || usage
 
 SUNVOX_LIB_SUBPATHS="
+linux/lib_arm/
 linux/lib_arm64/
-linux/lib_arm_armhf_raspberry_pi/
 linux/lib_x86/
 linux/lib_x86_64/
 macos/lib_arm64/

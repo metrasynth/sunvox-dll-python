@@ -130,15 +130,26 @@ class NOTECMD(IntEnum):
         a9,
         B9,
     ) = range(1, 121)
+
     EMPTY = 0
+
     NOTE_OFF = 128
-    ALL_NOTES_OFF = 129  # send "note off" to all modules
-    CLEAN_SYNTHS = (
-        130  # put all modules into standby state (stop and clear all internal buffers)
-    )
+
+    ALL_NOTES_OFF = 129
+    'send "note off" to all modules'
+
+    CLEAN_SYNTHS = 130
+    "stop all modules - clear their internal buffers and put them into standby mode"
+
     STOP = 131
+
     PLAY = 132
-    SET_PITCH = 133  # set pitch ctl_val
+
+    SET_PITCH = 133
+    "set the pitch specified in column XXYY, where 0x0000 - highest possible pitch, 0x7800 - lowest pitch (note C0); one semitone = 0x100"  # noqa: E501
+
+    CLEAN_MODULE = 140
+    "stop the module - clear its internal buffers and put it into standby mode"
 
 
 class INIT_FLAG(IntEnum):
@@ -146,24 +157,30 @@ class INIT_FLAG(IntEnum):
 
     NO_DEBUG_OUTPUT = 1 << 0
 
-    # Offline mode:
-    # system-dependent audio stream will not be created;
-    # user calls audio_callback() to get the next piece of sound stream
     USER_AUDIO_CALLBACK = 1 << 1
+    """
+    Offline mode:
+    system-dependent audio stream will not be created;
+    user calls audio_callback() to get the next piece of sound stream
+    """
 
-    # Same as USER_AUDIO_CALLBACK
     OFFLINE = 1 << 1
+    "Same as INIT_FLAG.USER_AUDIO_CALLBACK"
 
-    # Desired sample type of the output sound stream : int16_t
     AUDIO_INT16 = 1 << 2
+    "Desired sample type of the output sound stream : int16_t"
 
-    # Desired sample type of the output sound stream : float
-    # The actual sample type may be different, if INIT_FLAG.USER_AUDIO_CALLBACK is not set
     AUDIO_FLOAT32 = 1 << 3
+    """
+    Desired sample type of the output sound stream : float
+    The actual sample type may be different, if INIT_FLAG.USER_AUDIO_CALLBACK is not set
+    """
 
-    # Audio callback and song modification functions are in single thread
-    # Use it with INIT_FLAG.USER_AUDIO_CALLBACK only
     ONE_THREAD = 1 << 4
+    """
+    Audio callback and song modification functions are in single thread
+    Use it with INIT_FLAG.USER_AUDIO_CALLBACK only
+    """
 
 
 class TIME_MAP(IntEnum):
@@ -178,13 +195,25 @@ class MODULE(IntEnum):
     """Flags for get_module_flags()"""
 
     FLAG_EXISTS = 1 << 0
-    FLAG_EFFECT = 1 << 1
-    FLAG_MUTE = 1 << 2
-    FLAG_SOLO = 1 << 3
-    FLAG_BYPASS = 1 << 4
+
+    FLAG_GENERATOR = 1 << 1
+    "Note input + Sound output"
+
+    FLAG_EFFECT = 1 << 2
+    "Sound input + Sound output"
+
+    FLAG_MUTE = 1 << 3
+
+    FLAG_SOLO = 1 << 4
+
+    FLAG_BYPASS = 1 << 5
+
     INPUTS_OFF = 16
+
     INPUTS_MASK = 255 << INPUTS_OFF
+
     OUTPUTS_OFF = 16 + 8
+
     OUTPUTS_MASK = 255 << OUTPUTS_OFF
 
 
