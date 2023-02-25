@@ -739,6 +739,18 @@ def get_song_name(slot: int) -> bytes:
 
 
 @sunvox_fn(
+    _s.sv_set_song_name,
+    [
+        c_int,
+        c_char_p,
+    ],
+    c_int,
+)
+def set_song_name(slot: int, name: bytes) -> int:
+    pass
+
+
+@sunvox_fn(
     _s.sv_get_song_bpm,
     [
         c_int,
@@ -968,7 +980,7 @@ def load_module_from_memory(
 )
 def sampler_load(
     slot: int,
-    sampler_module: int,
+    mod_num: int,
     file_name: bytes,
     sample_slot: int,
 ) -> int:
@@ -991,7 +1003,7 @@ def sampler_load(
 )
 def sampler_load_from_memory(
     slot: int,
-    sampler_module: int,
+    mod_num: int,
     data: bytes,
     data_size: int,
     sample_slot: int,
@@ -999,6 +1011,90 @@ def sampler_load_from_memory(
     """
     load a sample to already created Sampler;
     to replace the whole sampler - set sample_slot to -1;
+    """
+
+
+@sunvox_fn(
+    _s.sv_metamodule_load,
+    [
+        c_int,
+        c_int,
+        c_char_p,
+    ],
+    c_int,
+)
+def metamodule_load(
+    slot: int,
+    mod_num: int,
+    file_name: bytes,
+) -> int:
+    """
+    load a file into the MetaModule;
+    supported file formats: sunvox, mod, xm, midi;
+    """
+
+
+@sunvox_fn(
+    _s.sv_metamodule_load_from_memory,
+    [
+        c_int,
+        c_int,
+        c_void_p,
+        c_int,
+    ],
+    c_int,
+)
+def metamodule_load_from_memory(
+    slot: int,
+    mod_num: int,
+    data: bytes,
+    data_size: int,
+) -> int:
+    """
+    load a file into the MetaModule;
+    supported file formats: sunvox, mod, xm, midi;
+    """
+
+
+@sunvox_fn(
+    _s.sv_vplayer_load,
+    [
+        c_int,
+        c_int,
+        c_char_p,
+    ],
+    c_int,
+)
+def vplayer_load(
+    slot: int,
+    mod_num: int,
+    file_name: bytes,
+) -> int:
+    """
+    load a file into the Vorbis Player;
+    supported file formats: ogg;
+    """
+
+
+@sunvox_fn(
+    _s.sv_vplayer_load_from_memory,
+    [
+        c_int,
+        c_int,
+        c_void_p,
+        c_int,
+    ],
+    c_int,
+)
+def vplayer_load_from_memory(
+    slot: int,
+    mod_num: int,
+    data: bytes,
+    data_size: int,
+) -> int:
+    """
+    load a file into the Vorbis Player;
+    supported file formats: ogg;
     """
 
 
@@ -1094,6 +1190,21 @@ def get_module_outputs(
 
 
 @sunvox_fn(
+    _s.sv_get_module_type,
+    [
+        c_int,
+        c_int,
+    ],
+    c_char_p,
+)
+def get_module_type(
+    slot: int,
+    mod_num: int,
+) -> bytes:
+    pass
+
+
+@sunvox_fn(
     _s.sv_get_module_name,
     [
         c_int,
@@ -1105,6 +1216,19 @@ def get_module_name(
     slot: int,
     mod_num: int,
 ) -> bytes:
+    pass
+
+
+@sunvox_fn(
+    _s.sv_set_module_name,
+    [
+        c_int,
+        c_int,
+        c_char_p,
+    ],
+    c_int,
+)
+def set_module_name(slot: int, mod_num: int, name: bytes) -> int:
     pass
 
 
@@ -1133,6 +1257,25 @@ def get_module_xy(
 
 
 @sunvox_fn(
+    _s.sv_set_module_xy,
+    [
+        c_int,
+        c_int,
+        c_int,
+        c_int,
+    ],
+    c_int,
+)
+def set_module_xy(
+    slot: int,
+    mod_num: int,
+    x: int,
+    y: int,
+) -> int:
+    pass
+
+
+@sunvox_fn(
     _s.sv_get_module_color,
     [
         c_int,
@@ -1146,6 +1289,25 @@ def get_module_color(
 ) -> int:
     """
     get module color in the following format: 0xBBGGRR
+    """
+
+
+@sunvox_fn(
+    _s.sv_set_module_color,
+    [
+        c_int,
+        c_int,
+        c_int,
+    ],
+    c_int,
+)
+def set_module_color(
+    slot: int,
+    mod_num: int,
+    color: int,
+) -> int:
+    """
+    set module color in the following format: 0xBBGGRR
     """
 
 
@@ -1167,6 +1329,44 @@ def get_module_finetune(
     return value: ( finetune & 0xFFFF ) | ( ( relative_note & 0xFFFF ) << 16 ).
 
     Use GET_MODULE_FINETUNE() macro to unpack finetune and relative_note.
+    """
+
+
+@sunvox_fn(
+    _s.sv_set_module_finetune,
+    [
+        c_int,
+        c_int,
+        c_int,
+    ],
+    c_int,
+)
+def set_module_finetune(
+    slot: int,
+    mod_num: int,
+    finetune: int,
+) -> int:
+    """
+    change the finetune immediately
+    """
+
+
+@sunvox_fn(
+    _s.sv_set_module_relnote,
+    [
+        c_int,
+        c_int,
+        c_int,
+    ],
+    c_int,
+)
+def set_module_relnote(
+    slot: int,
+    mod_num: int,
+    relative_note: int,
+) -> int:
+    """
+    change the relative note immediately
     """
 
 
@@ -1238,12 +1438,16 @@ def module_curve(
       MultiSynth:
         0 - X = note (0..127); Y = velocity (0..1); 128 items;
         1 - X = velocity (0..256); Y = velocity (0..1); 257 items;
+        2 - X = note (0..127); Y = pitch (0..1); 128 items;
+            pitch range: 0 ... 16384/65535 (note0) ... 49152/65535 (note128) ... 1; semitone = 256/65535;
       WaveShaper:
         0 - X = input (0..255); Y = output (0..1); 256 items;
       MultiCtl:
         0 - X = input (0..256); Y = output (0..1); 257 items;
       Analog Generator, Generator:
         0 - X = drawn waveform sample number (0..31); Y = volume (-1..1); 32 items;
+      FMX:
+        0 - X = custom waveform sample number (0..255); Y = volume (-1..1); 256 items;
     """
 
 
@@ -1295,7 +1499,179 @@ def get_module_ctl_value(
     ctl_num: int,
     scaled: int,
 ) -> int:
+    """
+    get the value of the specified module controller
+
+    Parameters:
+      slot;
+      mod_num - module number;
+      ctl_num - controller number (from 0);
+      scaled - describes the type of the returned value:
+        0 - real value (0,1,2...) as it is stored inside the controller;
+            but the value displayed in the program interface may be different - you can use scaled=2 to get the displayed value;
+        1 - scaled (0x0000...0x8000) if the controller type = 0, or the real value if the controller type = 1 (enum);
+            this value can be used in the pattern column XXYY;
+        2 - final value displayed in the program interface -
+            in most cases it is identical to the real value (scaled=0), and sometimes it has an additional offset;
+
+    return value: value of the specified module controller.
+    """
+
+
+@sunvox_fn(
+    _s.sv_set_module_ctl_value,
+    [
+        c_int,
+        c_int,
+        c_int,
+        c_int,
+        c_int,
+    ],
+    c_int,
+)
+def set_module_ctl_value(
+    slot: int,
+    mod_num: int,
+    ctl_num: int,
+    val: int,
+    scaled: int,
+) -> int:
+    """
+    send the value to the specified module controller;
+    (sv_send_event() will be used internally)
+    """
+
+
+@sunvox_fn(
+    _s.sv_get_module_ctl_min,
+    [
+        c_int,
+        c_int,
+        c_int,
+        c_int,
+    ],
+    c_int,
+)
+def get_module_ctl_min(
+    slot: int,
+    mod_num: int,
+    ctl_num: int,
+    scaled: int,
+) -> int:
     pass
+
+
+@sunvox_fn(
+    _s.sv_get_module_ctl_max,
+    [
+        c_int,
+        c_int,
+        c_int,
+        c_int,
+    ],
+    c_int,
+)
+def get_module_ctl_max(
+    slot: int,
+    mod_num: int,
+    ctl_num: int,
+    scaled: int,
+) -> int:
+    pass
+
+
+@sunvox_fn(
+    _s.sv_get_module_ctl_offset,
+    [
+        c_int,
+        c_int,
+        c_int,
+    ],
+    c_int,
+)
+def get_module_ctl_offset(
+    slot: int,
+    mod_num: int,
+    ctl_num: int,
+) -> int:
+    """Get display value offset"""
+
+
+@sunvox_fn(
+    _s.sv_get_module_ctl_type,
+    [
+        c_int,
+        c_int,
+        c_int,
+    ],
+    c_int,
+)
+def get_module_ctl_type(
+    slot: int,
+    mod_num: int,
+    ctl_num: int,
+) -> int:
+    """
+    0 - normal (scaled);
+    1 - selector (enum);
+    """
+
+
+@sunvox_fn(
+    _s.sv_get_module_ctl_group,
+    [
+        c_int,
+        c_int,
+        c_int,
+    ],
+    c_int,
+)
+def get_module_ctl_group(
+    slot: int,
+    mod_num: int,
+    ctl_num: int,
+) -> int:
+    pass
+
+
+@sunvox_fn(
+    _s.sv_new_pattern,
+    [
+        c_int,
+        c_int,
+        c_int,
+        c_int,
+        c_int,
+        c_int,
+        c_int,
+        c_char_p,
+    ],
+    c_int,
+    needs_lock=True,
+)
+def new_pattern(
+    slot: int,
+    clone: int,
+    x: int,
+    y: int,
+    tracks: int,
+    lines: int,
+    icon_seed: int,
+    name: bytes,
+) -> int:
+    """create a new pattern"""
+
+
+@sunvox_fn(
+    _s.sv_remove_pattern,
+    [
+        c_int,
+        c_int,
+    ],
+    c_int,
+)
+def remove_pattern(slot: int, pat_num: int) -> int:
+    """remove selected pattern"""
 
 
 @sunvox_fn(
@@ -1348,9 +1724,9 @@ def get_pattern_x(
     pat_num: int,
 ) -> int:
     """
-    get pattern information
+    get pattern position;
 
-    x - time (line number)
+    x - line number (horizontal position on the timeline)
     """
 
 
@@ -1367,9 +1743,35 @@ def get_pattern_y(
     pat_num: int,
 ) -> int:
     """
-    get pattern information
+    get pattern position;
 
-    y - vertical position on timeline;
+    y - vertical position on the timeline;
+    """
+
+
+@sunvox_fn(
+    _s.sv_set_pattern_xy,
+    [
+        c_int,
+        c_int,
+        c_int,
+        c_int,
+    ],
+    c_int,
+    needs_lock=True,
+)
+def set_pattern_xy(
+    slot: int,
+    pat_num: int,
+    x: int,
+    y: int,
+) -> int:
+    """
+    set pattern position;
+
+    Parameters:
+      x - line number (horizontal position on the timeline);
+      y - vertical position on the timeline;
     """
 
 
@@ -1386,9 +1788,9 @@ def get_pattern_tracks(
     pat_num: int,
 ) -> int:
     """
-    get pattern information
+    get pattern size;
 
-    tracks - number of pattern tracks;
+    return value: number of pattern tracks;
     """
 
 
@@ -1405,10 +1807,25 @@ def get_pattern_lines(
     pat_num: int,
 ) -> int:
     """
-    get pattern information
+    get pattern size;
 
-    lines - number of pattern lines;
+    return value: number of pattern lines;
     """
+
+
+@sunvox_fn(
+    _s.sv_set_pattern_size,
+    [
+        c_int,
+        c_int,
+        c_int,
+        c_int,
+    ],
+    c_int,
+    needs_lock=True,
+)
+def set_pattern_size(slot: int, pat_num: int, tracks: int, lines: int) -> int:
+    pass
 
 
 @sunvox_fn(
@@ -1423,11 +1840,25 @@ def get_pattern_name(
     slot: int,
     pat_num: int,
 ) -> bytes:
-    """
-    get pattern information
+    pass
 
-    name - pattern name or NULL;
-    """
+
+@sunvox_fn(
+    _s.sv_set_pattern_name,
+    [
+        c_int,
+        c_int,
+        c_char_p,
+    ],
+    c_int,
+    needs_lock=True,
+)
+def set_pattern_name(
+    slot: int,
+    pat_num: int,
+    name: bytes,
+) -> int:
+    pass
 
 
 @sunvox_fn(
