@@ -2,6 +2,16 @@ Changelog
 =========
 
 
+0.3.5.2.1.0.3
+-------------
+
+- Updates SunVox DLL to 2.1c (2.1.0.0 internally).
+
+- Adds ``sunvox.types.NOTECMD.PREV_TRACK`` command.
+
+- Exports ``sunvox.types.TIME_MAP`` enum from ``sunvox.api`` module.
+
+
 0.3.4.2.1.0.2
 -------------
 

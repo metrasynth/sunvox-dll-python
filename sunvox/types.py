@@ -146,7 +146,14 @@ class NOTECMD(IntEnum):
     PLAY = 132
 
     SET_PITCH = 133
-    "set the pitch specified in column XXYY, where 0x0000 - highest possible pitch, 0x7800 - lowest pitch (note C0); one semitone = 0x100"  # noqa: E501
+    """
+    set the pitch specified in column XXYY, where 0x0000
+    - highest possible pitch, 0x7800
+    - lowest pitch (note C0);
+    one semitone = 0x100
+    """
+
+    PREV_TRACK = 134
 
     CLEAN_MODULE = 140
     "stop the module - clear its internal buffers and put it into standby mode"
@@ -240,6 +247,7 @@ __all__ = [
     "NOTECMD",
     "INIT_FLAG",
     "MODULE",
+    "TIME_MAP",
     "sunvox_note",
     "sunvox_note_p",
     "c_float_p",
