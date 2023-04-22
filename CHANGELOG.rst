@@ -7,6 +7,8 @@ Changelog
 
 - Updates SunVox DLL to 2.1c (2.1.0.0 internally).
 
+- Adds ``sunvox.types.NOTECMD.PREV_TRACK`` command.
+
 
 0.3.4.2.1.0.2
 -------------
