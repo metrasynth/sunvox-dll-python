@@ -247,6 +247,7 @@ __all__ = [
     "NOTECMD",
     "INIT_FLAG",
     "MODULE",
+    "TIME_MAP",
     "sunvox_note",
     "sunvox_note_p",
     "c_float_p",

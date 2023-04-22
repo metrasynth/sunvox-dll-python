@@ -9,6 +9,8 @@ Changelog
 
 - Adds ``sunvox.types.NOTECMD.PREV_TRACK`` command.
 
+- Exports ``sunvox.types.TIME_MAP`` enum from ``sunvox.api`` module.
+
 
 0.3.4.2.1.0.2
 -------------
