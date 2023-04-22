@@ -1,4 +1,4 @@
-__version__ = "0.3.4.2.1.0.2"
+__version__ = "0.3.5.2.1.0.3"
 
 SUNVOX_COPYRIGHT_NOTICE = """\
 SunVox modular synthesizer
