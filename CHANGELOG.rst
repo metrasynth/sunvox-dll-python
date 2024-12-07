@@ -2,6 +2,15 @@ Changelog
 =========
 
 
+0.3.6.2.1.2.0
+-------------
+
+- Updates SunVox DLL to 2.1.2 (2.1.2.0 internally).
+
+- Adds new library functions and slot methods ``sv_sampler_par`` and
+  ``sv_save_to_memory``.
+
+
 0.3.5.2.1.0.3
 -------------
 

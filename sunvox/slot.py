@@ -337,6 +337,25 @@ class Slot(object):
 
     sampler_load_from_memory.__doc__ = dll.sampler_load_from_memory.__doc__
 
+    def sampler_par(
+        self,
+        mod_num: int,
+        sample_slot: int,
+        par: int,
+        par_val: int,
+        set: int,
+    ) -> int:
+        return self.process.sampler_par(
+            self.number,
+            mod_num,
+            sample_slot,
+            par,
+            par_val,
+            set,
+        )
+
+    sampler_par.__doc__ = dll.sampler_par.__doc__
+
     def metamodule_load(
         self,
         mod_num: int,

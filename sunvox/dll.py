@@ -1015,6 +1015,40 @@ def sampler_load_from_memory(
 
 
 @sunvox_fn(
+    _s.sv_sampler_par,
+    [
+        c_int,
+        c_int,
+        c_int,
+        c_int,
+        c_int,
+        c_int,
+    ],
+    c_int,
+)
+def sampler_par(
+    slot: int,
+    mod_num: int,
+    sample_slot: int,
+    par: int,
+    par_val: int,
+    set: int,
+) -> int:
+    """
+    set/get sample parameter:
+      0 - Loop begin: 0 ... (sample_length - 1);
+      1 - Loop length: 0 ... (sample_length - loop_begin);
+      2 - Loop type: 0 - none; 1 - fwd; 2 - bidirectional;
+      3 - Loop release flag: 0 - none; 1 - loop will be finished after the note release;
+      4 - Volume: 0 ... 64;
+      5 - Panning: 0 (left) ... 128 (center) ... 255 (right);
+      6 - Finetune: -128 ... 0 ... +127 (higher value = higher pitch);
+      7 - Relative note: -128 ... 0 ... +127 (higher value = higher pitch);
+      8 - Start position: 0 ... (sample_length - 1);
+    """
+
+
+@sunvox_fn(
     _s.sv_metamodule_load,
     [
         c_int,
@@ -2075,6 +2109,7 @@ __all__ = [
     "load_module_from_memory",
     "sampler_load",
     "sampler_load_from_memory",
+    "sampler_par",
     "get_number_of_modules",
     "get_module_flags",
     "get_module_inputs",
