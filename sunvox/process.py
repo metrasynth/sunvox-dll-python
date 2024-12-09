@@ -33,15 +33,21 @@ class Process(object):
         )
         self._process.start()
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.kill()
+
+    def kill(self):
+        self._conn.send(("kill", (), {}))
+
     _k, _v = None, None
     for _k in sunvox.dll.__all__:
         _v = getattr(sunvox.dll, _k)
         if hasattr(_v, "sunvox_dll_fn"):
             locals()[_k] = passthrough(_k)
     del _k, _v
-
-    def kill(self):
-        self._conn.send(("kill", (), {}))
 
 
 __all__ = ["Process"]

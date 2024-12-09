@@ -10,6 +10,8 @@ Changelog
 - Adds new library functions and slot methods ``sv_sampler_par`` and
   ``sv_save_to_memory``.
 
+- Allows auto-cleanup of a SunVox process by using a context manager.
+
 - Fixes missing ``save`` from ``sunvox.dll.__all__``,
   which prevented a ``Slot`` of a ``BufferedProcess``
   from being able to save project files to disk.
