@@ -2080,6 +2080,7 @@ __all__ = [
     "update_input",
     "load",
     "load_from_memory",
+    "save",
     "play",
     "play_from_beginning",
     "stop",

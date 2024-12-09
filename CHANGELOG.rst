@@ -10,6 +10,10 @@ Changelog
 - Adds new library functions and slot methods ``sv_sampler_par`` and
   ``sv_save_to_memory``.
 
+- Fixes missing ``save`` from ``sunvox.dll.__all__``,
+  which prevented a ``Slot`` of a ``BufferedProcess``
+  from being able to save project files to disk.
+
 
 0.3.5.2.1.0.3
 -------------
