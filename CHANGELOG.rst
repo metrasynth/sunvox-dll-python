@@ -16,6 +16,10 @@ Changelog
   which prevented a ``Slot`` of a ``BufferedProcess``
   from being able to save project files to disk.
 
+- Fixes ``pat_num`` not being correctly passed through
+  when calling ``sunvox.slot.Slot.set_pattern_event``.
+  (Thanks to `Phoel Ostrum <https://github.com/phostrum>`__.)
+
 
 0.3.5.2.1.0.3
 -------------
