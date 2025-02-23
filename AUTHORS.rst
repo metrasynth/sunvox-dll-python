@@ -1,5 +1,5 @@
 Authors
 =======
 
-* `Matthew Scott <https://github.com/gldnspud>`__
+* `Matthew Scott <https://github.com/matthewryanscott>`__
 * `Phoel Ostrum <https://github.com/phostrum>`__
