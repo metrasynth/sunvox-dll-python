@@ -63,7 +63,7 @@ def _find_sunvox_lib_path_from_dll_base():
     if platform == "win32":
         machine_path = "lib_x86_64" if is64bit else "lib_x86"
         lib_path = os.path.join(DEFAULT_DLL_BASE, "windows", machine_path)
-        os.environ["PATH"] = f'{lib_path};{os.environ["PATH"]}'
+        os.environ["PATH"] = f"{lib_path};{os.environ['PATH']}"
         return f"{lib_path}\\{rel_path}.dll"
     if rel_path is not None:
         return os.path.join(DLL_BASE, rel_path)

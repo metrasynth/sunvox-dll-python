@@ -22,6 +22,11 @@ Changelog
 
 - Moves from ``poetry`` and ``poetry-core`` to ``uv`` and ``hatchling``.
 
+- Switches from using black_ to ruff_ for formatting code.
+
+..  _ruff:
+    https://docs.astral.sh/ruff/
+
 
 0.3.5.2.1.0.3
 -------------

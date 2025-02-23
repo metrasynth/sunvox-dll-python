@@ -43,3 +43,17 @@ docs = [
 [tool.pytest.ini_options]
 addopts = "--doctest-glob='*.rst' --doctest-modules"
 testpaths = "sunvox tests"
+
+[tool.ruff]
+target-version = "py39"
+exclude = [
+    ".git",
+    ".venv",
+    ".idea",
+    "build",
+    "dist",
+]
+
+[tool.ruff.lint.isort]
+case-sensitive = true
+lines-after-imports = 2
