@@ -1,56 +1,45 @@
-[tool.poetry]
+[project]
 name = "sunvox-dll-python"
 version = "0.3.6.2.1.2.1"
 description = "Python ctypes-based wrapper for the SunVox library"
-authors = ["Matthew Scott <matt@11craft.com>"]
-license = "MIT"
 readme = "README.rst"
+authors = [
+    { name = "Matthew Scott", email = "matt@11craft.com" }
+]
+requires-python = ">=3.9"
+dependencies = []
 documentation = "https://sunvox-dll-python.readthedocs.io/en/latest/"
 repository = "https://github.com/metrasynth/sunvox-dll-python"
-packages = [
-    { include = "sunvox" },
+
+[project.optional-dependencies]
+buffered = [
+    "numpy>=2.0.2",
 ]
-classifiers = [
-    "Development Status :: 5 - Production/Stable",
-    "Environment :: Console",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: POSIX",
-    "Operating System :: MacOS",
-    "Operating System :: Unix",
-    "Operating System :: Microsoft :: Windows",
-    "Programming Language :: Python",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Topic :: Software Development :: Libraries :: Python Modules",
+tools = [
+    "numpy>=2.0.2",
+    "scipy>=1.13.1",
+    "tqdm>=4.67.1",
 ]
 
-[tool.poetry.dependencies]
-python = ">=3.9"
-numpy = {version = "*", optional = true}
-scipy = {version = "*", optional = true}
-tqdm = {version = "*", optional = true}
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.poetry.group.test.dependencies]
-pytest = "*"
-pytest-watch = "*"
+[tool.hatch.build.targets.wheel]
+packages = ["sunvox"]
 
-[tool.poetry.group.docs.dependencies]
-plantweb = {version = "*", optional = true}
-radiant-voices = {version = "*", optional = true}
-Sphinx = {version = "*", optional = true}
-sphinx-rtd-theme = {version = "*", optional = true}
-
-[tool.poetry.extras]
-buffered = ["numpy"]
-tools = ["numpy", "scipy", "tqdm"]
+[dependency-groups]
+dev = [
+    "pytest>=8.3.4",
+    "pytest-watch>=4.2.0",
+]
+docs = [
+    "plantweb>=1.3.0",
+    "radiant-voices>=1.0.3",
+    "sphinx>=7.4.7",
+    "sphinx-rtd-theme>=3.0.2",
+]
 
 [tool.pytest.ini_options]
 addopts = "--doctest-glob='*.rst' --doctest-modules"
 testpaths = "sunvox tests"
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
