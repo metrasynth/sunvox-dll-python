@@ -1,16 +1,15 @@
-name: Release to PyPI
+name: Release to Test PyPI
 
 on:
-  release:
-    types: [created]
+  workflow_dispatch:
 
 jobs:
   pypi-publish:
-    name: Publish release to PyPI
+    name: Publish release to Test PyPI
     runs-on: ubuntu-latest
     environment:
-      name: pypi
-      url: https://pypi.org/p/sunvox-dll-python
+      name: testpypi
+      url: https://test.pypi.org/p/sunvox-dll-python
     permissions:
       id-token: write
     steps:
@@ -28,3 +27,5 @@ jobs:
 
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+           repository-url: https://test.pypi.org/legacy/
