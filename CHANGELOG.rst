@@ -20,6 +20,8 @@ Changelog
   when calling ``sunvox.slot.Slot.set_pattern_event``.
   (Thanks to `Phoel Ostrum <https://github.com/phostrum>`__.)
 
+- Moves from ``poetry`` and ``poetry-core`` to ``uv`` and ``hatchling``.
+
 
 0.3.5.2.1.0.3
 -------------
