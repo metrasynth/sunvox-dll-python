@@ -655,7 +655,7 @@ class Slot(object):
         xxyy: int,
     ) -> int:
         return self.process.set_pattern_event(
-            self.number, track, line, nn, vv, mm, ccee, xxyy
+            self.number, pat_num, track, line, nn, vv, mm, ccee, xxyy
         )
 
     set_pattern_event.__doc__ = dll.set_pattern_event.__doc__
