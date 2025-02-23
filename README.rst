@@ -9,18 +9,20 @@ Part of the Metrasynth_ project.
 Purpose
 -------
 
-Provides access to all of the SunVox DLL functions described
-in the ``sunvox.h`` header file.
+Provides access to all of the SunVox library functions
+as described in the ``sunvox.h`` header file.
+
+Includes a copy of the most recent SunVox library for supported platforms.
 
 
 Requirements
 ------------
 
-- Python 3.7+
+- Python 3.9+
 
 - One of these supported operating systems:
 
-    - macOS (64-bit)
+    - macOS (64-bit Intel or M-series)
 
     - Linux (32-bit, 64-bit)
 
