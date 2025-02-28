@@ -1004,6 +1004,14 @@ buffered = [
     { name = "numpy", version = "2.0.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "numpy", version = "2.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
 ]
+docs = [
+    { name = "plantweb" },
+    { name = "radiant-voices" },
+    { name = "sphinx", version = "7.4.7", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.10.*'" },
+    { name = "sphinx", version = "8.2.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "sphinx-rtd-theme" },
+]
 tools = [
     { name = "numpy", version = "2.0.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "numpy", version = "2.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
@@ -1017,34 +1025,24 @@ dev = [
     { name = "pytest" },
     { name = "pytest-watch" },
 ]
-docs = [
-    { name = "plantweb" },
-    { name = "radiant-voices" },
-    { name = "sphinx", version = "7.4.7", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
-    { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.10.*'" },
-    { name = "sphinx", version = "8.2.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-    { name = "sphinx-rtd-theme" },
-]
 
 [package.metadata]
 requires-dist = [
     { name = "numpy", marker = "extra == 'buffered'", specifier = ">=2.0.2" },
     { name = "numpy", marker = "extra == 'tools'", specifier = ">=2.0.2" },
+    { name = "plantweb", marker = "extra == 'docs'", specifier = ">=1.3.0" },
+    { name = "radiant-voices", marker = "extra == 'docs'", specifier = ">=1.0.3" },
     { name = "scipy", marker = "extra == 'tools'", specifier = ">=1.13.1" },
+    { name = "sphinx", marker = "extra == 'docs'", specifier = ">=7.4.7" },
+    { name = "sphinx-rtd-theme", marker = "extra == 'docs'", specifier = ">=3.0.2" },
     { name = "tqdm", marker = "extra == 'tools'", specifier = ">=4.67.1" },
 ]
-provides-extras = ["buffered", "tools"]
+provides-extras = ["buffered", "docs", "tools"]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "pytest", specifier = ">=8.3.4" },
     { name = "pytest-watch", specifier = ">=4.2.0" },
-]
-docs = [
-    { name = "plantweb", specifier = ">=1.3.0" },
-    { name = "radiant-voices", specifier = ">=1.0.3" },
-    { name = "sphinx", specifier = ">=7.4.7" },
-    { name = "sphinx-rtd-theme", specifier = ">=3.0.2" },
 ]
 
 [[package]]
