@@ -15,6 +15,12 @@ repository = "https://github.com/metrasynth/sunvox-dll-python"
 buffered = [
     "numpy>=2.0.2",
 ]
+docs = [
+    "plantweb>=1.3.0",
+    "radiant-voices>=1.0.3",
+    "sphinx>=7.4.7",
+    "sphinx-rtd-theme>=3.0.2",
+]
 tools = [
     "numpy>=2.0.2",
     "scipy>=1.13.1",
@@ -32,12 +38,6 @@ packages = ["sunvox"]
 dev = [
     "pytest>=8.3.4",
     "pytest-watch>=4.2.0",
-]
-docs = [
-    "plantweb>=1.3.0",
-    "radiant-voices>=1.0.3",
-    "sphinx>=7.4.7",
-    "sphinx-rtd-theme>=3.0.2",
 ]
 
 [tool.pytest.ini_options]
