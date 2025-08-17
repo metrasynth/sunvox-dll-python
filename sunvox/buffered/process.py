@@ -79,7 +79,7 @@ class BufferedProcess(Process):
         self._send("fill_buffer", input_buffer)
         raw = self._recv()
         if isinstance(raw, bytes):
-            buffer = numpy.fromstring(raw, self.type_code)
+            buffer = numpy.frombuffer(raw, dtype=self.type_code)
             buffer.shape = self.shape
         else:
             buffer = zeros(self.shape)

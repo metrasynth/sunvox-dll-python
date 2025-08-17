@@ -48,7 +48,7 @@ Prep for PyPI and test
     $ python
     >>> import sunvox
     >>> sunvox.__version__
-    '0.3.6.2.1.2.1'
+    '0.3.7.2.1.2.1'
     >>> from sunvox.api import init
     >>> hex(init(None, 44100, 2, 0))
     '0x20102'

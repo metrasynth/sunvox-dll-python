@@ -2,6 +2,13 @@ Changelog
 =========
 
 
+0.3.7.2.1.2.1
+-------------
+
+- Fixes compatibility with NumPy >= 2.0.2 by replacing deprecated
+  ``numpy.fromstring`` with ``numpy.frombuffer`` in buffered processing.
+
+
 0.3.6.2.1.2.1
 -------------
 
