@@ -87,4 +87,4 @@ class BufferedProcess(Process):
         return buffer
 
 
-__all__ = ["BufferedProcess", "int16", "float32"]
+__all__ = ["BufferedProcess", "int16", "float32", "DATA_TYPE_FLAGS"]
