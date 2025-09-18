@@ -8,7 +8,7 @@ import sunvox.dll
 from sunvox.buffered.process import DATA_TYPE_FLAGS
 from sunvox.process import Process
 from sunvox.processor import Processor
-from sunvox.types import INIT_FLAG
+from sunvox.types import INIT_FLAG, c_uint32_p
 
 
 class ShmBufferedProcessor(Processor):
@@ -60,6 +60,20 @@ class ShmBufferedProcessor(Processor):
             )
         # Return success indicator to parent process
         return True
+
+    def get_time_map(
+        self,
+        slot: int,
+        start_line: int,
+        lines: int,
+        shm: SharedMemory,
+        flags: int,
+    ) -> int:
+        time_map_ptr = ctypes.cast(
+            ctypes.addressof(ctypes.c_char.from_buffer(shm.buf)),
+            c_uint32_p,
+        )
+        return sunvox.dll.get_time_map(slot, start_line, lines, time_map_ptr, flags)
 
 
 class ShmBufferedProcess(Process):
@@ -155,6 +169,32 @@ class ShmBufferedProcess(Process):
             self._input_buffer_shm,
             self._output_buffer_shm,
         )
+        return self._recv()
+
+    def init_time_map(self, lines: int) -> tuple[np.ndarray, SharedMemory]:
+        """
+        Prepare SHM buffer for time map, and return it with its shm handle.
+
+        It is the CALLER'S RESPONSIBILITY to call `.close()` on the returned object
+        once it is no longer needed.
+        """
+        time_map_shm = self._smm.SharedMemory(lines * 4)
+        time_map = np.ndarray(
+            shape=(lines,),
+            dtype=np.uint32,
+            buffer=time_map_shm.buf,
+        )
+        return time_map, time_map_shm
+
+    def get_time_map(
+        self,
+        slot: int,
+        start_line: int,
+        lines: int,
+        shm: SharedMemory,
+        flags: int,
+    ) -> int:
+        self._send("get_time_map", slot, start_line, lines, shm, flags)
         return self._recv()
 
     def fill_buffer(

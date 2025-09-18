@@ -2,11 +2,13 @@ import sys
 from collections import defaultdict
 from contextlib import contextmanager
 from io import BytesIO
+from multiprocessing.shared_memory import SharedMemory
 from pathlib import Path
-from typing import Union, BinaryIO, Optional
+from typing import BinaryIO, Optional, Union, overload
 
 from . import dll
-from .types import c_uint32_p, c_int16_p, c_float_p, sunvox_note_p
+from .types import c_float_p, c_int16_p, c_uint32_p, sunvox_note_p
+
 
 FILENAME_ENCODING = sys.getfilesystemencoding()
 MAX_SLOTS = 16
@@ -233,14 +235,32 @@ class Slot:
 
     get_song_length_lines.__doc__ = dll.get_song_length_lines.__doc__
 
+    @overload
     def get_time_map(
         self,
         start_line: int,
-        len: int,
-        dest: c_uint32_p,
+        lines: int,
+        dest: SharedMemory,
+        flags: int,
+    ) -> int: ...
+
+    @overload
+    def get_time_map(
+        self,
+        start_line: int,
+        lines: int,
+        dest: c_uint32_p,  # noqa
+        flags: int,
+    ) -> int: ...
+
+    def get_time_map(
+        self,
+        start_line: int,
+        lines: int,
+        dest: SharedMemory | c_uint32_p,  # noqa
         flags: int,
     ) -> int:
-        return self.process.get_time_map(self.number, start_line, len, dest, flags)
+        return self.process.get_time_map(self.number, start_line, lines, dest, flags)
 
     get_time_map.__doc__ = dll.get_time_map.__doc__
 
