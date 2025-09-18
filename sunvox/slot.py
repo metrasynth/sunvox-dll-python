@@ -21,7 +21,7 @@ class NoSlotsAvailable(Exception):
     """The maximum number of SunVox playback slots are in use."""
 
 
-class Slot(object):
+class Slot:
     """A context manager wrapping slot-specific API calls."""
 
     allocation_map = defaultdict(DEFAULT_ALLOCATION_MAP.copy)
