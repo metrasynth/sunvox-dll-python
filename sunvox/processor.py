@@ -9,7 +9,7 @@ def passthrough(name):
     return fn
 
 
-class Processor(object):
+class Processor:
     def __init__(self, conn):
         self.conn = conn
         self.alive = True
