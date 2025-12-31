@@ -751,6 +751,19 @@ def set_song_name(slot: int, name: bytes) -> int:
 
 
 @sunvox_fn(
+    _s.sv_get_base_version,
+    [
+        c_int,
+    ],
+    c_int,
+)
+def get_base_version(slot: int) -> int:
+    """
+    Get the SunVox version used to create the project.
+    """
+
+
+@sunvox_fn(
     _s.sv_get_song_bpm,
     [
         c_int,
@@ -2097,6 +2110,7 @@ __all__ = [
     "get_current_line2",
     "get_current_signal_level",
     "get_song_name",
+    "get_base_version",
     "get_song_bpm",
     "get_song_tpl",
     "get_song_length_frames",

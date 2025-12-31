@@ -213,6 +213,11 @@ class Slot(object):
 
     set_song_name.__doc__ = dll.set_song_name.__doc__
 
+    def get_base_version(self) -> int:
+        return self.process.get_base_version(self.number)
+
+    get_base_version.__doc__ = dll.get_base_version.__doc__
+
     def get_song_bpm(self) -> int:
         return self.process.get_song_bpm(self.number)
 

@@ -26,8 +26,8 @@ def test_init_deinit():
     # and: the library is deinitialized
     deinit_response = sunvox.api.deinit()
 
-    # then: the version reported is 2.1.2
-    assert version == 0x020102
+    # then: the version reported is 2.1.4
+    assert version == 0x020104
 
     # and: the deinitialization was successful
     assert deinit_response == 0

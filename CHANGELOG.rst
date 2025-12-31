@@ -2,6 +2,15 @@ Changelog
 =========
 
 
+0.3.8.2.1.4.0
+-------------
+
+- Updates SunVox DLL to 2.1.4 (2.1.4.0 internally).
+
+- Adds new library function and slot method ``get_base_version``
+  to get the SunVox version used to create a project.
+
+
 0.3.7.2.1.2.1
 -------------
 
