@@ -2,13 +2,32 @@ Changelog
 =========
 
 
-0.3.8.2.1.4.0
+0.4.0.2.1.4.0
 -------------
 
 - Updates SunVox DLL to 2.1.4 (2.1.4.0 internally).
 
 - Adds new library function and slot method ``get_base_version``
   to get the SunVox version used to create a project.
+
+- Adds new ``ShmBufferedProcess`` class in ``sunvox.buffered.shm`` module
+  that uses shared memory instead of stdio for inter-process communication,
+  providing more efficient audio buffer transfer between processes.
+
+- Adds ``Slot.get_time_map`` overload to accept ``SharedMemory`` as destination,
+  enabling efficient time map retrieval in multiprocess scenarios.
+
+- Exports many previously-defined library functions that were missing from
+  ``sunvox.dll.__all__``: ``sync_resume``, ``set_song_name``, ``find_module``,
+  ``metamodule_load``, ``metamodule_load_from_memory``, ``vplayer_load``,
+  ``vplayer_load_from_memory``, ``set_module_name``, ``set_module_xy``,
+  ``set_module_color``, ``set_module_finetune``, ``set_module_relnote``,
+  ``get_module_type``, ``set_module_ctl_value``, ``get_module_ctl_group``,
+  ``get_module_ctl_max``, ``get_module_ctl_min``, ``get_module_ctl_offset``,
+  ``get_module_ctl_type``, ``new_pattern``, ``remove_pattern``,
+  ``set_pattern_xy``, ``set_pattern_size``, ``set_pattern_name``,
+  ``get_pattern_event``, ``set_pattern_event``, ``pattern_mute``,
+  and ``sunvox_fn``.
 
 
 0.3.7.2.1.2.1

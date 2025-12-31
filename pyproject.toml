@@ -1,6 +1,6 @@
 [project]
 name = "sunvox-dll-python"
-version = "0.3.8.2.1.4.0"
+version = "0.4.0.2.1.4.0"
 description = "Python ctypes-based wrapper for the SunVox library"
 readme = "README.rst"
 authors = [
