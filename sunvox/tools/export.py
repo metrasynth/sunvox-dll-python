@@ -14,7 +14,7 @@ import os
 import sys
 
 from sunvox.api import Slot
-from sunvox.buffered import BufferedProcess, float32, int16
+from sunvox.buffered import BufferedProcess, ShmBufferedProcess, float32, int16
 
 
 log = logging.getLogger(__name__)
@@ -39,6 +39,14 @@ parser.add_argument(
     const=float32,
     default=float32,
     help="Output 32-bit floating point values",
+)
+parser.add_argument(
+    "--use-shm",
+    dest="use_shm",
+    action="store_const",
+    const=True,
+    default=False,
+    help="Use shared memory for audio data",
 )
 parser.add_argument(
     "--freq",
@@ -94,7 +102,8 @@ def main():
     channels = args.channels[0]
     log.debug("%r", channels)
     log.debug("Start SunVox process")
-    p = BufferedProcess(freq=freq, size=freq, channels=channels, data_type=data_type)
+    process_class = ShmBufferedProcess if args.use_shm else BufferedProcess
+    p = process_class(freq=freq, size=freq, channels=channels, data_type=data_type)
     slot = Slot(in_filename, process=p)
     length = slot.get_song_length_frames()
     output = np.zeros((length, 2), data_type)

@@ -18,7 +18,7 @@ def passthrough(name):
     return fn
 
 
-class Process(object):
+class Process:
     """Starts SunVox DLL in a separate process, with an API bridge."""
 
     processor_class = Processor
